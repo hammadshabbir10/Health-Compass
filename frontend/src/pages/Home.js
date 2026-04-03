@@ -1,443 +1,690 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
-function Home({ user, onLogout }) {
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF7F2;
+    --cream-dark: #F0EBE1;
+    --sage: #4A7C6F;
+    --sage-light: #6B9E91;
+    --sage-pale: #E8F0EE;
+    --navy: #1C2B3A;
+    --navy-mid: #2D4055;
+    --slate: #5A6A7A;
+    --warm-white: #FDFCFA;
+    --amber: #D4793A;
+    --amber-pale: #FDF0E6;
+    --text-body: #3D4E5C;
+    --border: rgba(74, 124, 111, 0.15);
+    --shadow-sm: 0 2px 12px rgba(28, 43, 58, 0.06);
+    --shadow-md: 0 8px 32px rgba(28, 43, 58, 0.10);
+    --shadow-lg: 0 20px 60px rgba(28, 43, 58, 0.14);
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 36px;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  .hc-home {
+    min-height: 100vh;
+    background: var(--cream);
+    font-family: var(--font-body);
+    color: var(--navy);
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background blobs ── */
+  .bg-blob {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(80px);
+    opacity: 0.35;
+  }
+  .bg-blob-1 {
+    width: 520px; height: 520px;
+    top: -120px; right: -80px;
+    background: radial-gradient(circle, #B8D4CE, #6B9E9100);
+    animation: blobDrift 18s ease-in-out infinite alternate;
+  }
+  .bg-blob-2 {
+    width: 400px; height: 400px;
+    bottom: 10%; left: -100px;
+    background: radial-gradient(circle, #D4793A44, #D4793A00);
+    animation: blobDrift 22s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes blobDrift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(30px, 20px) scale(1.06); }
+  }
+
+  /* ── Scroll reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.72s cubic-bezier(.22,.68,0,1.2), transform 0.72s cubic-bezier(.22,.68,0,1.2);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ── Layout ── */
+  .hc-main {
+    position: relative;
+    z-index: 1;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    padding: 5rem 0 4rem;
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 2.5rem; padding: 3rem 0 2.5rem; }
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    background: var(--sage-pale);
+    color: var(--sage);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+    border: 1px solid rgba(74, 124, 111, 0.2);
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 5vw, 3.8rem);
+    line-height: 1.12;
+    color: var(--navy);
+    margin-bottom: 1.2rem;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--sage);
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-body);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    max-width: 480px;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.8rem;
+    border-radius: 999px;
+    background: var(--navy);
+    color: var(--cream);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
+    box-shadow: 0 4px 18px rgba(28, 43, 58, 0.22);
+  }
+  .btn-primary:hover {
+    background: var(--navy-mid);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(28, 43, 58, 0.28);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.8rem;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 1.5px solid rgba(28, 43, 58, 0.18);
+    transition: background 0.2s, border-color 0.2s, transform 0.18s;
+  }
+  .btn-secondary:hover {
+    background: var(--cream-dark);
+    border-color: rgba(28, 43, 58, 0.28);
+    transform: translateY(-2px);
+  }
+
+  /* ── Hero visual card ── */
+  .hero-card {
+    background: var(--warm-white);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    position: relative;
+  }
+  .hero-card-img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+  .hero-card:hover .hero-card-img { transform: scale(1.03); }
+  .hero-card-body {
+    padding: 1.6rem 1.8rem 1.8rem;
+  }
+  .hero-card-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    margin-bottom: 0.6rem;
+    color: var(--navy);
+  }
+  .hero-card-text {
+    color: var(--text-body);
+    font-size: 0.93rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  .hero-card-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.88rem;
+    color: var(--text-body);
+  }
+  .feature-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--sage);
+    flex-shrink: 0;
+  }
+
+  /* ── Welcome banner ── */
+  .welcome-banner {
+    background: linear-gradient(135deg, var(--sage-pale) 0%, #D6E9E5 100%);
+    border: 1px solid rgba(74, 124, 111, 0.22);
+    border-radius: var(--radius-lg);
+    padding: 1.4rem 1.8rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .welcome-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .welcome-text strong { color: var(--navy); font-weight: 600; }
+  .welcome-text p { margin-top: 0.2rem; font-size: 0.9rem; color: var(--text-body); line-height: 1.6; }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin: 3.5rem 0;
+  }
+  @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.6rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .stat-label { font-size: 0.85rem; color: var(--slate); font-weight: 500; }
+
+  /* ── Section headers ── */
+  .section-header {
+    margin-bottom: 2rem;
+  }
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 0.6rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    color: var(--navy);
+    line-height: 1.2;
+  }
+
+  /* ── How it works ── */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+  }
+  .step-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.6rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--navy);
+    color: var(--cream);
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .step-title { font-weight: 600; color: var(--navy); margin-bottom: 0.5rem; font-size: 0.98rem; }
+  .step-detail { font-size: 0.88rem; color: var(--text-body); line-height: 1.65; }
+
+  /* ── Dark CTA band ── */
+  .dark-band {
+    background: var(--navy);
+    color: var(--warm-white);
+    border-radius: var(--radius-xl);
+    padding: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    margin: 3.5rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (max-width: 760px) {
+    .dark-band { grid-template-columns: 1fr; gap: 1.8rem; padding: 2.2rem; }
+  }
+  .dark-band::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(107,158,145,0.18), transparent 70%);
+  }
+  .dark-band-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .dark-band-text {
+    color: #AAC0CF;
+    line-height: 1.75;
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .dark-band-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .dark-band-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: #C8D8E4;
+  }
+  .dark-band-list li::before {
+    content: '✓';
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(107,158,145,0.25);
+    color: #6B9E91;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .testimonial-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg);
+    padding: 1.8rem;
+  }
+  .testimonial-card p { color: #C8D8E4; line-height: 1.75; font-size: 0.95rem; font-style: italic; margin-bottom: 1rem; }
+  .testimonial-card cite { color: #6B9E91; font-weight: 600; font-style: normal; font-size: 0.9rem; }
+
+  /* ── Assessments grid ── */
+  .assessments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem;
+  }
+  .assessment-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.6rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .assessment-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .assessment-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    background: var(--sage-pale);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .assessment-title { font-weight: 600; color: var(--navy); margin-bottom: 0.4rem; }
+  .assessment-detail { font-size: 0.88rem; color: var(--text-body); line-height: 1.65; }
+
+  /* ── FAQ ── */
+  .faq-list { display: grid; gap: 0.8rem; }
+  .faq-item {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.3rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .faq-q { font-weight: 600; color: var(--navy); margin-bottom: 0.5rem; font-size: 0.97rem; }
+  .faq-a { color: var(--text-body); font-size: 0.9rem; line-height: 1.65; }
+
+  /* ── CTA bottom strip ── */
+  .cta-strip {
+    background: linear-gradient(135deg, var(--amber-pale) 0%, #FEF9F0 100%);
+    border: 1px solid rgba(212, 121, 58, 0.22);
+    border-radius: var(--radius-xl);
+    padding: 2.8rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: center;
+    margin-top: 3.5rem;
+  }
+  @media (max-width: 640px) {
+    .cta-strip { grid-template-columns: 1fr; padding: 2rem; }
+  }
+  .cta-strip-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+  }
+  .cta-strip-sub { color: #7A5230; font-size: 0.95rem; line-height: 1.65; }
+  .cta-strip-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+
+  .btn-amber {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.85rem 1.8rem;
+    border-radius: 999px;
+    background: var(--amber);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.18s;
+    box-shadow: 0 4px 18px rgba(212, 121, 58, 0.3);
+  }
+  .btn-amber:hover { background: #C06A2F; transform: translateY(-2px); }
+
+  /* ── Divider ── */
+  .section { margin-top: 4.5rem; }
+`;
+
+const assessments = [
+  { icon: '🧠', title: 'Memory & Orientation', detail: 'Recall, sequencing, and attention prompts calibrated by age and baseline.' },
+  { icon: '💬', title: 'Mood & Wellbeing', detail: 'Track anxiety, sleep quality, and daily outlook with supportive check-ins.' },
+  { icon: '🚶', title: 'Mobility & Balance', detail: 'Functional mobility prompts to detect subtle strength or coordination changes.' },
+  { icon: '🏡', title: 'Daily Living Skills', detail: 'Monitor tasks like cooking, medication adherence, and appointment management.' },
+];
+
+const steps = [
+  { num: '01', title: 'Guided Intake', detail: 'Capture baseline context, medications, and daily routines in a few minutes.' },
+  { num: '02', title: 'Adaptive Test Flow', detail: 'Receive memory, mood, and mobility prompts tuned to the individual profile.' },
+  { num: '03', title: 'Safety-First Triage', detail: 'Red-flag signals trigger immediate guidance and escalation paths.' },
+  { num: '04', title: 'Care Plan Summary', detail: 'Share clear next steps with family members and clinicians.' },
+];
+
+const faqs = [
+  { q: 'Is this a diagnostic tool?', a: 'No. Health Compass provides decision support and structured triage only. Always consult a qualified clinician for diagnosis.' },
+  { q: 'Who should use the tests?', a: 'Primary caregivers and older adults who want to track cognitive and functional changes safely over time.' },
+  { q: 'How are recommendations generated?', a: 'The platform uses profile context, symptom intake, and clinician-informed guardrail rules to surface clear next steps.' },
+];
+
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('visible')),
+      { threshold: 0.12 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+export default function Home({ user, onLogout }) {
+  useReveal();
   const displayName = user?.name || user?.email || 'Caregiver';
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(180deg, #f9f5f1 0%, #f3efe9 45%, #eef2f6 100%)',
-        color: '#0f172a',
-        fontFamily: '"Space Grotesk", "Segoe UI", sans-serif',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-        .hc-fade { animation: fadeIn 0.9s ease both; }
-        .hc-rise { animation: riseIn 1.05s ease both; }
-        .hc-stagger { animation: riseIn 0.95s ease both; }
-        .hc-page { animation: pageReveal 0.75s ease both; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes riseIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pageReveal { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
-      <div
-        style={{
-          position: 'absolute',
-          top: '-160px',
-          right: '-180px',
-          width: '360px',
-          height: '360px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(250, 204, 21, 0.25) 0%, rgba(249, 115, 22, 0.06) 70%)',
-          filter: 'blur(12px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '-200px',
-          left: '-140px',
-          width: '420px',
-          height: '420px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(14, 116, 144, 0.18) 0%, rgba(14, 116, 144, 0.02) 70%)',
-          filter: 'blur(18px)',
-          pointerEvents: 'none',
-        }}
-      />
+    <div className="hc-home">
+      <style>{STYLES}</style>
+      <div className="bg-blob bg-blob-1" />
+      <div className="bg-blob bg-blob-2" />
+
       <Navbar user={user} onLogout={onLogout} />
-      <main style={{ maxWidth: '1180px', margin: '0 auto', padding: '3.5rem 2rem 6rem' }}>
-        <section
-          className="hc-page"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '2.8rem',
-            alignItems: 'center',
-          }}
-        >
-          <div className="hc-rise">
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.45rem 1rem',
-                borderRadius: '999px',
-                background: '#111827',
-                color: '#fef3c7',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                marginBottom: '1rem',
-                letterSpacing: '0.06em',
-              }}
-            >
-              AI Product Development
+
+      <main className="hc-main">
+        {/* ── Hero ── */}
+        <section className="hero">
+          <div>
+            <div className="reveal welcome-banner" style={{ marginBottom: '1.8rem' }}>
+              <span className="welcome-icon">👋</span>
+              <div className="welcome-text">
+                <strong>Welcome back, {displayName}</strong>
+                <p>Build a profile once and receive tailored memory, mobility, and mood check-ins that adapt as your loved one's needs change.</p>
+              </div>
             </div>
-            <h1
-              style={{
-                fontSize: 'clamp(2.4rem, 4vw, 3.35rem)',
-                margin: 0,
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 700,
-                color: '#0f172a',
-              }}
-            >
-              Health Compass
+
+            <div className="reveal reveal-delay-1 hero-badge">Caregiver-First Platform</div>
+
+            <h1 className="reveal reveal-delay-2 hero-title">
+              Navigate care with <em>clarity</em> and confidence
             </h1>
-            <p style={{ margin: '0.9rem 0 0', color: '#475569', fontSize: '1.05rem', lineHeight: 1.75 }}>
-              A caregiver-first triage platform that translates uncertainty into clear, safe next steps.
-              Health Compass combines age-aware assessments, guided intake, and explainable recommendations
-              so families can act with confidence.
+
+            <p className="reveal reveal-delay-3 hero-desc">
+              Health Compass translates uncertain symptoms into structured, safe next steps — combining age-aware assessments, guided intake, and explainable recommendations so families can act decisively.
             </p>
-            <div
-              style={{
-                marginTop: '1.6rem',
-                padding: '1.1rem 1.3rem',
-                background: 'rgba(255, 255, 255, 0.92)',
-                borderRadius: '16px',
-                border: '1px solid rgba(148, 163, 184, 0.35)',
-                boxShadow: '0 22px 45px -35px rgba(15, 23, 42, 0.45)',
-              }}
-            >
-              <strong>Welcome {displayName},</strong> build a profile once and receive tailored memory,
-              mobility, and mood check-ins that adapt as your loved one changes.
-            </div>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.6rem', flexWrap: 'wrap' }}>
-              <Link
-                to="/dashboard"
-                style={{
-                  padding: '0.75rem 1.6rem',
-                  borderRadius: '999px',
-                  background: 'linear-gradient(110deg, #111827 0%, #1f2937 100%)',
-                  color: '#fef3c7',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  boxShadow: '0 18px 30px -22px rgba(15, 23, 42, 0.55)',
-                }}
-              >
-                Go to Dashboard
-              </Link>
-              <Link
-                to="/services"
-                style={{
-                  padding: '0.75rem 1.6rem',
-                  borderRadius: '999px',
-                  border: '1px solid rgba(15, 23, 42, 0.2)',
-                  color: '#111827',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  background: '#fff7ed',
-                }}
-              >
-                View Services
-              </Link>
+
+            <div className="reveal reveal-delay-4 hero-cta">
+              <Link to="/dashboard" className="btn-primary">Go to Dashboard →</Link>
+              <Link to="/services" className="btn-secondary">View Services</Link>
             </div>
           </div>
-          <div
-            className="hc-fade"
-            style={{
-              background: 'linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)',
-              borderRadius: '24px',
-              padding: '2rem',
-              border: '1px solid rgba(148, 163, 184, 0.25)',
-              boxShadow: '0 26px 60px -45px rgba(15, 23, 42, 0.45)',
-            }}
-          >
-            <div
-              style={{
-                borderRadius: '18px',
-                overflow: 'hidden',
-                border: '1px solid rgba(15, 23, 42, 0.08)',
-                marginBottom: '1.3rem',
-              }}
-            >
-              <img
-                src="https://images.unsplash.com/photo-1526256262350-7da7584cf5eb"
-                alt="Care consultation"
-                style={{ width: '100%', height: '230px', objectFit: 'cover', display: 'block' }}
-              />
+
+          <div className="reveal reveal-delay-2 hero-card">
+            <img
+              src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=700&q=80"
+              alt="Care consultation"
+              className="hero-card-img"
+            />
+            <div className="hero-card-body">
+              <div className="hero-card-title">Clarity at Every Step</div>
+              <p className="hero-card-text">
+                We translate symptoms into clinician-informed check-ins and prioritize safety signals — so families always know whether to monitor, schedule a visit, or seek urgent care.
+              </p>
+              <div className="hero-card-features">
+                {['Personalized test plans with adaptive follow-ups', 'Clear caregiver guidance with safety guardrails', 'Progress summaries that build confidence over time'].map((f) => (
+                  <div key={f} className="feature-item">
+                    <span className="feature-dot" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3 style={{ margin: 0, fontFamily: '"Playfair Display", serif' }}>Clarity at Every Step</h3>
-            <p style={{ margin: '0.7rem 0 0', color: '#475569', lineHeight: 1.7 }}>
-              We translate symptoms into structured, clinician-informed check-ins and prioritize safety
-              signals so families know when to monitor, schedule a visit, or seek urgent care.
+          </div>
+        </section>
+
+        {/* ── Stats ── */}
+        <div className="stats-row">
+          {[
+            { value: '2.4k+', label: 'Assessments Delivered' },
+            { value: '91%', label: 'Caregiver Confidence Score' },
+            { value: '6 min', label: 'Average Triage Time' },
+          ].map((s, i) => (
+            <div key={s.label} className={`reveal reveal-delay-${i + 1} stat-card`}>
+              <div className="stat-value">{s.value}</div>
+              <div className="stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── How It Works ── */}
+        <section className="section">
+          <div className="reveal section-header">
+            <span className="section-label">Process</span>
+            <h2 className="section-title">How it works</h2>
+          </div>
+          <div className="steps-grid">
+            {steps.map((s, i) => (
+              <div key={s.title} className={`reveal reveal-delay-${i + 1} step-card`}>
+                <div className="step-num">{s.num}</div>
+                <div className="step-title">{s.title}</div>
+                <p className="step-detail">{s.detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Dark Band ── */}
+        <div className="reveal dark-band">
+          <div>
+            <h2 className="dark-band-title">Designed for safe decisions</h2>
+            <p className="dark-band-text">
+              Every flow is built with clinician feedback, covering red flags, daily function, and caregiver burden. We keep each recommendation transparent so you can explain it easily.
             </p>
-            <div style={{ display: 'grid', gap: '0.6rem', marginTop: '1.1rem', color: '#1f2937' }}>
-              <div>Personalized test plans and follow-ups.</div>
-              <div>Clear caregiver guidance with safety guardrails.</div>
-              <div>Progress summaries that build confidence over time.</div>
-            </div>
+            <ul className="dark-band-list">
+              <li>Safety guardrails and escalation prompts built in</li>
+              <li>Explainable rationale for every next step</li>
+              <li>Plain language designed for non-clinical caregivers</li>
+            </ul>
           </div>
-        </section>
+          <div className="testimonial-card">
+            <p>"The checklist kept us calm and organized. We knew which symptoms were urgent and which could wait for a regular appointment."</p>
+            <cite>— Family caregiver</cite>
+          </div>
+        </div>
 
-        <section style={{ marginTop: '3.5rem' }}>
-          <div
-            className="hc-rise"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '1.2rem',
-            }}
-          >
-            {[
-              { label: 'Assessments Delivered', value: '2.4k+' },
-              { label: 'Caregiver Confidence Score', value: '91%' },
-              { label: 'Average Triage Time', value: '6 min' },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '16px',
-                  padding: '1.2rem',
-                  border: '1px solid rgba(148, 163, 184, 0.3)',
-                  boxShadow: '0 18px 40px -32px rgba(15, 23, 42, 0.35)',
-                }}
-              >
-                <div style={{ fontSize: '1.65rem', fontWeight: 700, color: '#111827' }}>{stat.value}</div>
-                <div style={{ color: '#6b7280' }}>{stat.label}</div>
+        {/* ── Assessments ── */}
+        <section className="section">
+          <div className="reveal section-header">
+            <span className="section-label">Capabilities</span>
+            <h2 className="section-title">Assessments we run</h2>
+          </div>
+          <div className="assessments-grid">
+            {assessments.map((a, i) => (
+              <div key={a.title} className={`reveal reveal-delay-${i + 1} assessment-card`}>
+                <div className="assessment-icon">{a.icon}</div>
+                <div className="assessment-title">{a.title}</div>
+                <p className="assessment-detail">{a.detail}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section style={{ marginTop: '4rem' }}>
-          <h2 style={{ marginBottom: '1rem', fontFamily: '"Playfair Display", serif' }}>How It Works</h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {[
-              {
-                title: 'Guided Intake',
-                detail: 'Capture baseline context, medications, and daily routines in a few minutes.',
-              },
-              {
-                title: 'Adaptive Test Flow',
-                detail: 'Receive memory, mood, and mobility prompts tuned to the profile.',
-              },
-              {
-                title: 'Safety-First Triage',
-                detail: 'Red-flag signals trigger immediate guidance and escalation paths.',
-              },
-              {
-                title: 'Care Plan Summary',
-                detail: 'Share clear next steps with family members and clinicians.',
-              },
-            ].map((item, index) => (
-              <div
-                key={item.title}
-                className="hc-stagger"
-                style={{
-                  animationDelay: `${0.08 * index}s`,
-                  background: 'linear-gradient(180deg, #ffffff 0%, #f9fafb 100%)',
-                  borderRadius: '18px',
-                  padding: '1.4rem',
-                  border: '1px solid rgba(148, 163, 184, 0.25)',
-                  boxShadow: '0 20px 45px -35px rgba(15, 23, 42, 0.25)',
-                }}
-              >
-                <h4 style={{ margin: 0 }}>{item.title}</h4>
-                <p style={{ margin: '0.6rem 0 0', color: '#6b7280', lineHeight: 1.6 }}>{item.detail}</p>
+        {/* ── FAQ ── */}
+        <section className="section">
+          <div className="reveal section-header">
+            <span className="section-label">FAQ</span>
+            <h2 className="section-title">Frequently asked</h2>
+          </div>
+          <div className="faq-list">
+            {faqs.map((f, i) => (
+              <div key={f.q} className={`reveal reveal-delay-${i + 1} faq-item`}>
+                <div className="faq-q">{f.q}</div>
+                <p className="faq-a">{f.a}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section style={{ marginTop: '4rem' }}>
-          <div
-            className="hc-fade"
-            style={{
-              background: 'linear-gradient(120deg, #0f172a 0%, #1f2937 100%)',
-              color: '#f8fafc',
-              borderRadius: '24px',
-              padding: '2.4rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '2rem',
-              alignItems: 'center',
-              boxShadow: '0 30px 60px -45px rgba(15, 23, 42, 0.65)',
-            }}
-          >
-            <div>
-              <h2 style={{ marginBottom: '0.8rem', fontFamily: '"Playfair Display", serif' }}>
-                Designed for Safe Decisions
-              </h2>
-              <p style={{ color: '#e2e8f0', lineHeight: 1.7 }}>
-                Every flow is built with clinician feedback, covering red flags, daily function, and
-                caregiver burden. We keep each recommendation transparent so you can explain it easily.
-              </p>
-              <div style={{ marginTop: '1.2rem', display: 'grid', gap: '0.6rem' }}>
-                <div>Safety guardrails and escalation prompts.</div>
-                <div>Explainable rationale for each next step.</div>
-                <div>Clear language for non-clinical caregivers.</div>
-              </div>
-            </div>
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: '18px',
-                padding: '1.4rem',
-                border: '1px solid rgba(148, 163, 184, 0.2)',
-              }}
-            >
-              <div style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                Caregiver Snapshot
-              </div>
-              <div style={{ color: '#cbd5f5', lineHeight: 1.7 }}>
-                "The checklist kept us calm and organized. We knew which symptoms were urgent and which
-                could wait for a regular appointment."
-              </div>
-              <div style={{ marginTop: '0.8rem', color: '#fef3c7', fontWeight: 600 }}>- Family caregiver</div>
-            </div>
+        {/* ── CTA Strip ── */}
+        <div className="reveal cta-strip">
+          <div>
+            <h2 className="cta-strip-title">Ready to build a safer care plan?</h2>
+            <p className="cta-strip-sub">Start with a guided profile and let Health Compass handle the rest.</p>
           </div>
-        </section>
-
-        <section style={{ marginTop: '4rem' }}>
-          <h2 style={{ marginBottom: '1rem', fontFamily: '"Playfair Display", serif' }}>Assessments We Run</h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {[
-              {
-                title: 'Memory and Orientation',
-                detail: 'Recall, sequencing, and attention prompts calibrated by age and baseline.',
-              },
-              {
-                title: 'Mood and Wellbeing',
-                detail: 'Track anxiety, sleep, and daily outlook with short, supportive check-ins.',
-              },
-              {
-                title: 'Mobility and Balance',
-                detail: 'Functional mobility prompts to detect subtle strength changes.',
-              },
-              {
-                title: 'Daily Living Skills',
-                detail: 'Monitor tasks like cooking, medication, and appointment management.',
-              },
-            ].map((item, index) => (
-              <div
-                key={item.title}
-                className="hc-stagger"
-                style={{
-                  animationDelay: `${0.1 * index}s`,
-                  background: '#ffffff',
-                  borderRadius: '18px',
-                  padding: '1.4rem',
-                  border: '1px solid rgba(148, 163, 184, 0.25)',
-                }}
-              >
-                <h4 style={{ margin: 0 }}>{item.title}</h4>
-                <p style={{ margin: '0.6rem 0 0', color: '#6b7280', lineHeight: 1.6 }}>{item.detail}</p>
-              </div>
-            ))}
+          <div className="cta-strip-actions">
+            <Link to="/signup" className="btn-amber">Create Account</Link>
+            <Link to="/about" className="btn-secondary">Learn More</Link>
           </div>
-        </section>
-
-        <section style={{ marginTop: '4rem' }}>
-          <h2 style={{ marginBottom: '1rem', fontFamily: '"Playfair Display", serif' }}>Frequently Asked</h2>
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            {[
-              {
-                q: 'Is this a diagnostic tool?',
-                a: 'No. Health Compass provides decision support and structured triage only.',
-              },
-              {
-                q: 'Who should use the tests?',
-                a: 'Primary caregivers and older adults who want to track changes safely.',
-              },
-              {
-                q: 'How are recommendations generated?',
-                a: 'The platform uses profile context, symptom intake, and guardrail rules.',
-              },
-            ].map((item) => (
-              <div
-                key={item.q}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '14px',
-                  padding: '1rem 1.2rem',
-                  border: '1px solid rgba(148, 163, 184, 0.25)',
-                }}
-              >
-                <strong>{item.q}</strong>
-                <p style={{ margin: '0.4rem 0 0', color: '#6b7280', lineHeight: 1.6 }}>{item.a}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section style={{ marginTop: '4rem' }}>
-          <div
-            className="hc-rise"
-            style={{
-              background: 'linear-gradient(120deg, #fff7ed 0%, #fffbeb 100%)',
-              borderRadius: '24px',
-              padding: '2.2rem',
-              border: '1px solid rgba(251, 191, 36, 0.35)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '1.6rem',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <h2 style={{ marginBottom: '0.6rem', fontFamily: '"Playfair Display", serif' }}>
-                Ready to build a safer care plan?
-              </h2>
-              <p style={{ margin: 0, color: '#92400e', lineHeight: 1.7 }}>
-                Start with a guided profile and let Health Compass handle the rest.
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <Link
-                to="/signup"
-                style={{
-                  padding: '0.75rem 1.6rem',
-                  borderRadius: '999px',
-                  background: '#111827',
-                  color: '#fef3c7',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Create Account
-              </Link>
-              <Link
-                to="/about"
-                style={{
-                  padding: '0.75rem 1.6rem',
-                  borderRadius: '999px',
-                  border: '1px solid rgba(15, 23, 42, 0.2)',
-                  color: '#111827',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  background: '#ffffff',
-                }}
-              >
-                Learn More
-              </Link>
-            </div>
-          </div>
-        </section>
+        </div>
       </main>
     </div>
   );
 }
-
-export default Home;

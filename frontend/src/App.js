@@ -10,7 +10,9 @@ import EpisodicMemoryTest from './pages/tests/EpisodicMemoryTest';
 import ExecutiveTest from './pages/tests/ExecutiveTest';
 import LanguageTest from './pages/tests/LanguageTest';
 import FunctionalTest from './pages/tests/FunctionalTest';
+import AdaptiveTest from './pages/tests/AdaptiveTest';
 import Results from './pages/tests/Results';
+import ClinicalRiskAssessment from './pages/tests/ClinicalRiskAssessment';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -211,10 +213,30 @@ function App() {
           }
         />
         <Route
+          path="/tests/adaptive"
+          element={
+            isAuthenticated ? (
+              <AdaptiveTest user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
           path="/tests/results"
           element={
             isAuthenticated ? (
               <Results user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/tests/clinical-risk"
+          element={
+            isAuthenticated ? (
+              <ClinicalRiskAssessment user={user} onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )

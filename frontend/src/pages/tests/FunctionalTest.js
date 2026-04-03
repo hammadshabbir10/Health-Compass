@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
+import { Home, ArrowLeft, ArrowRight } from 'lucide-react';
+import { TEST_STYLES } from './testStyles';
 
 function FunctionalTest({ user, onLogout }) {
   const navigate = useNavigate();
@@ -28,137 +30,70 @@ function FunctionalTest({ user, onLogout }) {
   }, [answers]);
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(160deg, #0b1736 0%, #1b2a52 55%, #1f2f5e 100%)',
-        color: '#e2e8f0',
-      }}
-    >
+    <div className="tp-root">
+      <style>{TEST_STYLES}</style>
+      <div className="tp-blob tp-blob-1" />
+      <div className="tp-blob tp-blob-2" />
       <Navbar user={user} onLogout={onLogout} />
-      <main style={{ maxWidth: '980px', margin: '0 auto', padding: '2.5rem 2rem 4rem' }}>
-        <div
-          style={{
-            background: '#111b3b',
-            borderRadius: '18px',
-            padding: '1.8rem',
-            border: '1px solid rgba(148, 163, 184, 0.25)',
-            boxShadow: '0 24px 40px -30px rgba(15, 23, 42, 0.8)',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ display: 'grid', gap: '1rem', alignItems: 'center', gridTemplateColumns: '1.4fr 1fr' }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '2rem' }}>{test?.title || 'Functional Skills Test'}</h2>
-              <p style={{ marginTop: '0.6rem', color: '#cbd5f5', lineHeight: 1.7 }}>
-                This section connects cognitive changes to real-world daily tasks using an IADL style assessment.
-              </p>
-            </div>
-            <div
-              style={{
-                borderRadius: '14px',
-                overflow: 'hidden',
-                border: '1px solid rgba(148, 163, 184, 0.3)',
-                background: '#0f1a36',
-              }}
-            >
-              <img
-                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4"
-                alt="Functional daily tasks"
-                style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
-              />
-            </div>
+
+      <main className="tp-main">
+        <div className="tp-hero">
+          <div>
+            <div className="tp-hero-badge"><Home size={10} /> Functional Skills</div>
+            <h1 className="tp-hero-title">{test?.title || 'Functional Skills Test'}</h1>
+            <p className="tp-hero-desc">
+              This section connects cognitive changes to real-world daily tasks using an IADL style assessment.
+            </p>
+          </div>
+          <div className="tp-hero-img-wrap">
+            <img
+              className="tp-hero-img"
+              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80"
+              alt="Functional daily tasks"
+            />
+            <div className="tp-hero-img-overlay" />
           </div>
         </div>
 
+        <div className="tp-info">
+          <div className="tp-info-title">Why Functional Assessment Matters</div>
+          <ul className="tp-info-list">
+            <li>IADL-style items connect cognitive scores to real-world daily living impact.</li>
+            <li>Functional decline is one of the most meaningful indicators for caregivers and clinicians.</li>
+            <li>Reveals whether cognitive changes are affecting independence and safety at home.</li>
+          </ul>
+        </div>
+
         {!test && (
-          <div
-            style={{
-              background: '#111b3b',
-              borderRadius: '16px',
-              padding: '1.6rem',
-              border: '1px solid rgba(148, 163, 184, 0.25)',
-              color: '#e2e8f0',
-              display: 'grid',
-              gap: '1rem',
-            }}
-          >
-            <div style={{ fontWeight: 600, fontSize: '1.05rem' }}>Functional test is not ready yet.</div>
-            <div style={{ color: '#cbd5f5', lineHeight: 1.7 }}>
-              Generate your assessment set from the dashboard to unlock this section.
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              style={{
-                width: 'fit-content',
-                padding: '0.75rem 1.4rem',
-                borderRadius: '12px',
-                background: 'linear-gradient(90deg, #38bdf8 0%, #2563eb 100%)',
-                color: '#ffffff',
-                border: 'none',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Go to Dashboard
+          <div className="tp-not-ready">
+            <div className="tp-not-ready-title">Functional test is not ready yet</div>
+            <p className="tp-not-ready-text">Generate your assessment set from the dashboard to unlock this section.</p>
+            <button className="tp-btn-primary" onClick={() => navigate('/dashboard')}>
+              Go to Dashboard <ArrowRight size={16} />
             </button>
           </div>
         )}
 
         {test && (
-          <form style={{ display: 'grid', gap: '1.5rem' }}>
+          <div className="tp-form">
             {questions.map((question, index) => (
-              <div
-                key={question.id || index}
-                style={{
-                  background: '#f8fbff',
-                  borderRadius: '16px',
-                  padding: '1.4rem',
-                  border: '1px solid #dbeafe',
-                  color: '#0f172a',
-                  boxShadow: '0 20px 40px -30px rgba(15, 23, 42, 0.3)',
-                }}
-              >
-                <div style={{ fontWeight: 600, marginBottom: '0.6rem' }}>
-                  {index + 1}. {question.question || question.prompt}
-                </div>
+              <div key={question.id || index} className="tp-q-card">
+                <div className="tp-q-num">{String(index + 1).padStart(2, '0')}</div>
+                <div className="tp-q-text">{question.question || question.prompt}</div>
                 {question.type === 'text' ? (
                   <textarea
+                    className="tp-textarea"
                     rows="4"
                     value={answers[question.id] || ''}
-                    onChange={(event) => handleAnswer(question.id, event.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.9rem',
-                      borderRadius: '12px',
-                      border: '1px solid #cbd5f5',
-                      background: '#ffffff',
-                      resize: 'vertical',
-                    }}
+                    onChange={(e) => handleAnswer(question.id, e.target.value)}
+                    placeholder="Type your answer here…"
                   />
                 ) : (
-                  <div style={{ display: 'grid', gap: '0.6rem' }}>
+                  <div className="tp-options">
                     {question.options?.map((option) => (
-                      <label
-                        key={option}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.6rem',
-                          padding: '0.6rem 0.75rem',
-                          borderRadius: '10px',
-                          border: '1px solid #dbeafe',
-                          background: '#ffffff',
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name={question.id}
-                          value={option}
-                          checked={answers[question.id] === option}
-                          onChange={() => handleAnswer(question.id, option)}
-                        />
+                      <label key={option} className={`tp-option${answers[question.id] === option ? ' selected' : ''}`}>
+                        <input type="radio" name={question.id} value={option} checked={answers[question.id] === option} onChange={() => handleAnswer(question.id, option)} />
+                        <span className="tp-option-dot"><span className="tp-option-dot-inner" /></span>
                         {option}
                       </label>
                     ))}
@@ -166,39 +101,11 @@ function FunctionalTest({ user, onLogout }) {
                 )}
               </div>
             ))}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => navigate('/tests/language')}
-                style={{
-                  padding: '0.85rem 1.4rem',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(148, 163, 184, 0.4)',
-                  background: 'transparent',
-                  color: '#e2e8f0',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/tests/results')}
-                style={{
-                  padding: '0.85rem 1.7rem',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(90deg, #38bdf8 0%, #2563eb 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Submit and View Results
-              </button>
+            <div className="tp-actions">
+              <button className="tp-btn-secondary" onClick={() => navigate('/tests/language')}><ArrowLeft size={16} /> Back</button>
+              <button className="tp-btn-sage" onClick={() => navigate('/tests/results')}>Submit & View Results <ArrowRight size={16} /></button>
             </div>
-          </form>
+          </div>
         )}
       </main>
     </div>
