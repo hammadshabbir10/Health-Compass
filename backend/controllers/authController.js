@@ -191,30 +191,29 @@ exports.register = async (req, res) => {
     }
     // Remove any previous pending registration for same email
     await PendingUser.deleteOne({ email });
-    // Generate verification token (6-digit OTP)
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-    // Create PendingUser (do not create actual User yet)
-    const pending = await PendingUser.create({
+    
+    // Bypass OTP Verification: Create actual User immediately
+    const user = await User.create({
       name,
       email,
       password,
-      verificationToken,
-      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+      isEmailVerified: true,
+      emailVerified: true
     });
 
-    // Send verification email
-    const emailResult = await sendVerificationEmail(email, verificationToken);
-
-    if (!emailResult.success) {
-      console.error('Failed to send verification email:', emailResult.error);
-      // Still return success but mention email issue
-    }
+    const token = generateToken(user._id);
 
     res.status(201).json({
       success: true,
-      message: 'OTP sent. Please verify your email to complete registration.',
-      pending: true,
-      emailSent: emailResult.success,
+      message: 'Registration successful.',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      }
     });
   } catch (error) {
     console.error('Registration error:', error);

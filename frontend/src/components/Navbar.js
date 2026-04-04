@@ -273,9 +273,9 @@ const NAVBAR_STYLES = `
 
 const navLinks = [
   { to: '/', label: 'Home' },
-  { to: '/about', label: 'About' },
-  { to: '/services', label: 'Services' },
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/history', label: 'History' },
+  { to: '/pricing', label: 'Pricing' },
 ];
 
 function Navbar({ user, onLogout }) {

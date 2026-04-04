@@ -443,7 +443,70 @@ function Results({ user, onLogout }) {
     return { size, center, radius, rings, axisPoints, scorePoints };
   }, [abilityScores]);
 
+  // Save assessment to history once per unique test generation
+  useEffect(() => {
+    if (!mocaScore) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Key is tied to the test-generation timestamp so each new test run
+    // saves exactly once, even if the user navigates away and returns.
+    const metadata = JSON.parse(localStorage.getItem('healthCompassMetadata') || '{}');
+    const generatedAt = metadata.generatedAt || 'default';
+    const sessionKey = `healthCompassResultsSaved_${generatedAt}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, '1');
+
+    const saveAssessment = async () => {
+      try {
+        const overallCorrect = summary.rows.reduce((s, r) => s + (r.correctCount || 0), 0);
+        const overallTotal   = summary.rows.reduce((s, r) => s + (r.total      || 0), 0);
+        const byDomain = summary.rows.reduce((obj, r) => {
+          obj[r.id] = { earned: r.correctCount || 0, total: r.total || 0, percentage: r.percent || 0 };
+          return obj;
+        }, {});
+
+        const res = await fetch('http://localhost:5000/api/assessment/save-result', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            profile,
+            scores: {
+              raw: {
+                earned: overallCorrect,
+                total: overallTotal,
+                percentage: summary.overallPercent,
+              },
+              mocaEquivalent: {
+                raw: mocaScore.raw,
+                adjusted: mocaScore.adjusted,
+                adjustments: mocaScore.adjustments || [],
+              },
+              byDomain,
+            },
+            prediction: null,
+            interpretation: {
+              level: mocaScore.interpretation,
+              note: 'This is a screening tool, not a diagnostic assessment. Please consult a healthcare professional for clinical interpretation.',
+            },
+          }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+          console.error('Failed to save assessment history:', data.message);
+        }
+      } catch (err) {
+        console.error('Failed to save assessment history:', err);
+      }
+    };
+
+    saveAssessment();
+  }, [mocaScore]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleRetakeTest = () => {
+    const metadata = JSON.parse(localStorage.getItem('healthCompassMetadata') || '{}');
+    const generatedAt = metadata.generatedAt || 'default';
+    sessionStorage.removeItem(`healthCompassResultsSaved_${generatedAt}`);
     localStorage.removeItem(ANSWER_KEY);
     localStorage.removeItem(ADAPTIVE_ANSWER_KEY);
     localStorage.removeItem(TEST_KEY);

@@ -587,8 +587,7 @@ const HealthCompassAuth = ({ onLogin, initialView = 'login' }) => {
     if (currentView === 'otp') navigate('/verify', { replace: true });
     if (currentView === 'forgot-password') navigate('/forgot-password', { replace: true });
     if (currentView === 'reset-password') navigate('/reset-password', { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentView]);
+  }, [currentView, navigate]);
 
   const handleOtpChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -656,7 +655,10 @@ const HealthCompassAuth = ({ onLogin, initialView = 'login' }) => {
         body: JSON.stringify({ name, email, password }),
       });
       const data = await response.json();
-      if (data.success && data.pending) {
+      if (data.success && data.token && data.user) {
+        setSuccess('Registration successful!');
+        setTimeout(() => { onLogin(data.user, data.token); }, 500);
+      } else if (data.success && data.pending) {
         setFlow('verify');
         setSuccess('OTP sent to your email. Please verify to continue.');
         setTimeout(() => { handleTransition('otp'); }, 400);

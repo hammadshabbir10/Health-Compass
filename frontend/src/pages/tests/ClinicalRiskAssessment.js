@@ -500,7 +500,9 @@ function ClinicalRiskAssessment({ user, onLogout }) {
           body: JSON.stringify(assessmentData),
         });
         const data = await response.json();
-        if (data.success) setRiskPrediction(data);
+        if (data.success) {
+          setRiskPrediction(data);
+        }
         else setError(data.message || 'Failed to get risk assessment');
       } catch (err) {
         setError('Unable to connect to AI service. Please try again later.');

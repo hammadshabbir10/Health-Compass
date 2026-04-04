@@ -7,6 +7,7 @@ require('dotenv').config({ path: './config.env' });
 const authRoutes = require('./routes/auth');
 const aiRoutes = require('./routes/ai');
 const assessmentRoutes = require('./routes/assessment');
+const subscriptionRoutes = require('./routes/subscription');
 const app = express();
 
 app.use(
@@ -36,6 +37,7 @@ mongoose
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/assessment', assessmentRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({

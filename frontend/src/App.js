@@ -13,6 +13,8 @@ import FunctionalTest from './pages/tests/FunctionalTest';
 import AdaptiveTest from './pages/tests/AdaptiveTest';
 import Results from './pages/tests/Results';
 import ClinicalRiskAssessment from './pages/tests/ClinicalRiskAssessment';
+import History from './pages/History';
+import Subscription from './pages/Subscription';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -237,6 +239,27 @@ function App() {
           element={
             isAuthenticated ? (
               <ClinicalRiskAssessment user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/history"
+          element={
+            isAuthenticated ? (
+              <History user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            isAuthenticated ? (
+              <Subscription user={user} onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )
