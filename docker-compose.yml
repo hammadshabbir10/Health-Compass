@@ -38,7 +38,7 @@ services:
       - JWT_EXPIRE=30d
       - ML_SERVICE_URL=http://healthcompass_ml:5001
       # IMPORTANT: PASTE YOUR GOOGLE GEMINI API KEY HERE
-      - GEMINI_API_KEY=AIzaSyCsjNfGqc781JoO7xhqA3VJIrx-tvsO1w0
+      - GEMINI_API_KEY=""
     env_file:
       - ./backend/config.env
     depends_on:
