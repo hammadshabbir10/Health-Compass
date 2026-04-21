@@ -367,7 +367,7 @@ exports.generateTests = async (req, res) => {
       });
     }
 
-    const apiKey = process.env.ASSESSMENT_ENGINE_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ success: false, message: 'Assessment engine not configured.' });
     }
@@ -513,7 +513,7 @@ exports.generateAdaptiveQuestion = async (req, res) => {
       });
     }
 
-    const apiKey = process.env.ASSESSMENT_ENGINE_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ success: false, message: 'Assessment engine not configured.' });
     }
