@@ -12,17 +12,17 @@ Health Compass is a patient ability assessment web app that guides caregivers th
 ## Tech Stack
 - Frontend: React, React Router
 - Backend: Node.js, Express
-- AI: Gemini (via API)
+- Logic: Proprietary Assessment Engine
 
 ## Project Structure
-- backend/: API server, AI test generation, auth
+- backend/: API server, adaptive test generation, auth
 - frontend/: React UI
 
 ## Running with Docker (Recommended)
 
 If you have Docker and Docker Desktop installed, you can run the entire stack with a single command:
 
-1. **Configure API Key**: Open `docker-compose.yml` and paste your Gemini API key in the `GEMINI_API_KEY` field under `healthcompass-backend`.
+1. **Configure Engine Key**: Open `docker-compose.yml` and paste your key in the `GEMINI_API_KEY` field under `healthcompass-backend`.
 2. **Start Services**:
    ```bash
    docker-compose up --build
@@ -58,7 +58,7 @@ npm start
 
 ## Notes
 - Do not commit backend/config.env (it is ignored).
-- Generate new tests after changing the AI prompt.
+- New tests are calibrated based on patient profiles.
 
 ## License
 MIT

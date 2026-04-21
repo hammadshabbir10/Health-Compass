@@ -367,9 +367,9 @@ exports.generateTests = async (req, res) => {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.ASSESSMENT_ENGINE_KEY;
     if (!apiKey) {
-      return res.status(500).json({ success: false, message: 'Gemini API key not configured.' });
+      return res.status(500).json({ success: false, message: 'Assessment engine not configured.' });
     }
 
     const User = require('../models/User');
@@ -430,14 +430,12 @@ exports.generateTests = async (req, res) => {
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!text) {
-      console.error('Gemini response:', JSON.stringify(data, null, 2));
-      return res.status(500).json({ success: false, message: 'No response from AI. Check API key.' });
+      return res.status(500).json({ success: false, message: 'Assessment engine failed to respond.' });
     }
 
     const jsonPayload = extractJson(text);
     if (!jsonPayload) {
-      console.error('Failed to extract JSON from:', text.substring(0, 500));
-      return res.status(500).json({ success: false, message: 'AI response did not include valid JSON.' });
+      return res.status(500).json({ success: false, message: 'Assessment engine returned invalid data.' });
     }
 
     let parsed;
@@ -445,12 +443,12 @@ exports.generateTests = async (req, res) => {
       parsed = JSON.parse(jsonPayload);
     } catch (error) {
       console.error('JSON parse error:', error.message, jsonPayload.substring(0, 500));
-      return res.status(500).json({ success: false, message: 'AI response was not valid JSON.' });
+      return res.status(500).json({ success: false, message: 'Core logic error: invalid data format.' });
     }
 
     const tests = normalizeTests(parsed.tests, parsed.metadata);
     if (tests.length === 0) {
-      return res.status(500).json({ success: false, message: 'Gemini did not return tests.' });
+      return res.status(500).json({ success: false, message: 'Assessment engine did not return valid data.' });
     }
 
     // Increment the appropriate counter
@@ -515,9 +513,9 @@ exports.generateAdaptiveQuestion = async (req, res) => {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.ASSESSMENT_ENGINE_KEY;
     if (!apiKey) {
-      return res.status(500).json({ success: false, message: 'Gemini API key not configured.' });
+      return res.status(500).json({ success: false, message: 'Assessment engine not configured.' });
     }
 
     // Calculate target difficulty based on performance
@@ -559,14 +557,14 @@ exports.generateAdaptiveQuestion = async (req, res) => {
 
     const jsonPayload = extractJson(text);
     if (!jsonPayload) {
-      return res.status(500).json({ success: false, message: 'AI response did not include valid JSON.' });
+      return res.status(500).json({ success: false, message: 'Core logic response did not include valid JSON.' });
     }
 
     let parsed;
     try {
       parsed = JSON.parse(jsonPayload);
     } catch (error) {
-      return res.status(500).json({ success: false, message: 'AI response was not valid JSON.' });
+      return res.status(500).json({ success: false, message: 'Core logic response was not valid JSON.' });
     }
 
     const question = parsed.question;

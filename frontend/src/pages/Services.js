@@ -191,8 +191,8 @@ export default function Services({ user, onLogout }) {
 
           <div className="reveal service-card" style={{transitionDelay: '0.2s'}}>
             <div className="service-icon"><ShieldCheck size={32} /></div>
-            <h3>AI Risk Assessment</h3>
-            <p>XGBoost and Gemini-powered predictive models that identify subtle patterns and alert you to potential clinical escalations.</p>
+            <h3>Predictive Risk Analysis</h3>
+            <p>Advanced predictive models that identify subtle patterns and alert you to potential clinical escalations.</p>
             <ul className="feature-list">
               <li><CheckCircle2 size={18} /> Predictive Risk Modeling</li>
               <li><CheckCircle2 size={18} /> Clinician-ready Summaries</li>
