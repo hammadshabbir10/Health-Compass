@@ -191,10 +191,35 @@ const QUESTION_STYLES = `
   }
 `;
 
-function QuestionPanel({ tests, loading, error, onGenerate }) {
+function QuestionPanel({ tests, loading, error, onGenerate, usageData }) {
+  const isLimitReached = usageData?.used >= usageData?.limit && usageData?.limit !== 'Unlimited';
+
   return (
     <div className="qp-root">
       <style>{QUESTION_STYLES}</style>
+      
+      {/* Usage Tracker */}
+      {usageData && (
+        <div style={{
+          padding: '1rem',
+          background: 'var(--sage-pale)',
+          borderRadius: '12px',
+          border: '1px solid rgba(74, 124, 111, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '0.85rem'
+        }}>
+          <div>
+            <span style={{color: 'var(--slate)', textTransform: 'uppercase', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.05em', display: 'block', marginBottom: '2px'}}>Plan Usage</span>
+            <span style={{fontWeight: 600, color: 'var(--navy)'}}>{(usageData.tier || 'free').toUpperCase()} Plan</span>
+          </div>
+          <div style={{textAlign: 'right'}}>
+            <span style={{fontWeight: 700, color: isLimitReached ? '#B91C1C' : 'var(--sage)', fontSize: '1rem'}}>{usageData?.used || 0}</span>
+            <span style={{color: 'var(--slate)', fontWeight: 500}}> / {usageData?.limit || 1} assessments</span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="qp-header">
@@ -253,14 +278,22 @@ function QuestionPanel({ tests, loading, error, onGenerate }) {
       )}
 
       {/* Generate button */}
-      <button
-        className="qp-generate-btn"
-        onClick={onGenerate}
-        disabled={loading}
-      >
-        <Sparkles size={16} />
-        {loading ? 'Generating…' : 'Generate Tests'}
-      </button>
+      <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+        <button
+          className="qp-generate-btn"
+          onClick={onGenerate}
+          disabled={loading || isLimitReached}
+          style={{width: '100%', justifyContent: 'center'}}
+        >
+          <Sparkles size={16} />
+          {loading ? 'Generating…' : (isLimitReached ? 'Limit Reached' : 'Generate Tests')}
+        </button>
+        {isLimitReached && (
+          <p style={{fontSize: '0.75rem', color: '#B91C1C', textAlign: 'center', margin: 0, fontWeight: 500}}>
+            You've used all assessments on your current plan.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
+import { User, Activity, ShieldAlert, Heart, Lock, Sparkles, ChevronRight, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-function ProfilePanel({ profile, onChange }) {
+function ProfilePanel({ profile, onChange, user }) {
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     clinical: false,
     medical: false,
     vitals: false
   });
+
+  const tier = user?.subscriptionTier || 'free';
+  const isPro = tier === 'pro';
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -19,633 +24,269 @@ function ProfilePanel({ profile, onChange }) {
     onChange(field, value);
   };
 
-  // Calculate profile completeness
   const calculateCompleteness = () => {
-    const requiredFields = ['name', 'age', 'gender', 'education'];
+    const requiredFields = ['name', 'age', 'gender', 'education', 'occupation'];
     const filledRequired = requiredFields.filter(f => profile[f]).length;
-    const optionalFields = ['ethnicity', 'bmi', 'smoking', 'alcohol', 'physical_activity', 'sleep_quality'];
-    const filledOptional = optionalFields.filter(f => profile[f]).length;
-    
-    const total = requiredFields.length + optionalFields.length;
-    const filled = filledRequired + filledOptional;
-    return Math.round((filled / total) * 100);
+    const total = requiredFields.length;
+    return Math.round((filledRequired / total) * 100);
   };
 
   const completeness = calculateCompleteness();
 
-  return (
+  const sectionStyle = {
+    marginBottom: '1rem',
+    borderRadius: '16px',
+    border: '1px solid rgba(0,0,0,0.05)',
+    background: '#fff',
+    overflow: 'hidden',
+    transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+  };
+
+  const headerStyle = {
+    padding: '1.2rem 1.5rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    cursor: 'pointer',
+    background: '#fff',
+    transition: 'background 0.2s'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    color: 'var(--slate)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: '0.5rem'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '0.9rem 1.1rem',
+    border: '1.5px solid #F1F5F9',
+    borderRadius: '12px',
+    fontSize: '0.95rem',
+    fontFamily: 'inherit',
+    background: '#F8FAFC',
+    transition: 'all 0.2s'
+  };
+
+  const lockOverlay = (
     <div style={{
-      background: '#fff',
-      borderRadius: '20px',
-      boxShadow: '0 8px 32px rgba(28, 43, 58, 0.08)',
-      overflow: 'hidden',
-      border: '1px solid rgba(74, 124, 111, 0.15)'
+      position: 'absolute', inset: 0,
+      background: 'rgba(255,255,255,0.85)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      zIndex: 10, borderRadius: '16px', padding: '2rem',
+      textAlign: 'center'
     }}>
+      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--sage-pale)', color: 'var(--sage)', display: 'flex', alignItems: 'center', justifyCenter: 'center', marginBottom: '1rem' }}>
+        <Lock size={20} />
+      </div>
+      <h4 style={{ margin: '0 0 0.5rem', fontFamily: 'var(--font-serif)' }}>Pro Feature</h4>
+      <p style={{ fontSize: '0.85rem', color: 'var(--slate)', marginBottom: '1rem' }}>Advanced clinical markers are available on the Pro plan.</p>
+      <Link to="/subscription" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--sage)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        Upgrade Now <ChevronRight size={14} />
+      </Link>
+    </div>
+  );
+
+  return (
+    <div className="profile-panel-premium">
+      <style>{`
+        .profile-panel-premium { font-family: 'Outfit', sans-serif; }
+        .input-focus:focus { outline: none; border-color: var(--sage) !important; background: #fff !important; box-shadow: 0 0 0 4px var(--sage-pale); }
+      `}</style>
+      
       <div style={{
-        padding: '1.5rem',
-        background: 'linear-gradient(135deg, #1C2B3A 0%, #2D4055 100%)',
-        color: '#fff'
+        padding: '2.5rem 2rem',
+        background: 'var(--navy)',
+        borderRadius: '32px 32px 0 0',
+        color: '#fff',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <h2 style={{ margin: 0, fontSize: '1.3rem' }}>Patient Details</h2>
-        <p style={{ margin: '0.3rem 0 0', opacity: 0.8, fontSize: '0.85rem' }}>
-          Complete profile for MoCA-standard personalised assessments.
-        </p>
-        <div style={{
-          marginTop: '1rem',
-          background: 'rgba(255,255,255,0.15)',
-          borderRadius: '10px',
-          padding: '0.5rem 1rem'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-            <span>Profile completeness</span>
-            <span>{completeness}%</span>
+        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(74, 124, 111, 0.3), transparent 70%)' }}></div>
+        
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <User size={20} color="var(--sage-pale)" />
+            </div>
+            <h2 style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.8rem' }}>Patient Profile</h2>
           </div>
-          <div style={{
-            marginTop: '0.3rem',
-            height: '6px',
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: '3px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: `${completeness}%`,
-              height: '100%',
-              background: '#6B9E91',
-              borderRadius: '3px',
-              transition: 'width 0.3s'
-            }} />
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.6rem', color: 'rgba(255,255,255,0.7)' }}>
+            <span>Completeness</span>
+            <span style={{ fontWeight: 600, color: '#fff' }}>{completeness}%</span>
+          </div>
+          <div style={{ height: '8px', background: 'rgba(255,255,255,0.15)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ width: `${completeness}%`, height: '100%', background: '#D4793A', borderRadius: '4px', transition: 'width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)', boxShadow: '0 0 10px rgba(212, 121, 58, 0.5)' }}></div>
           </div>
         </div>
       </div>
 
-      <div style={{ padding: '1.5rem' }}>
-        {/* Section 1: Basic Information */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div 
-            onClick={() => toggleSection('basic')}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              cursor: 'pointer',
-              padding: '0.5rem 0',
-              borderBottom: '2px solid #E8F0EE'
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1C2B3A' }}>Core information</h3>
-            <span style={{ fontSize: '1.2rem' }}>{expandedSections.basic ? '−' : '+'}</span>
+      <div style={{ padding: '2rem', background: 'var(--white)', borderRadius: '0 0 32px 32px', border: '1px solid rgba(0,0,0,0.05)', borderTop: 'none' }}>
+        
+        {/* Section 1: Core Information */}
+        <div style={sectionStyle}>
+          <div style={headerStyle} onClick={() => toggleSection('basic')}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              <Sparkles size={18} color="var(--sage)" />
+              <span style={{ fontWeight: 600 }}>Core Information</span>
+            </div>
+            <ChevronRight size={18} style={{ transform: expandedSections.basic ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }} />
           </div>
           
           {expandedSections.basic && (
-            <div style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
+            <div style={{ padding: '0 1.5rem 1.5rem', display: 'grid', gap: '1.2rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Patient Name *
-                </label>
-                <input
-                  type="text"
-                  value={profile.name || ''}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="Full name"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
+                <label style={labelStyle}>Full Name *</label>
+                <input style={inputStyle} className="input-focus" type="text" value={profile.name || ''} onChange={(e) => handleChange('name', e.target.value)} placeholder="Enter patient name" />
               </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Age *
-                </label>
-                <input
-                  type="number"
-                  value={profile.age || ''}
-                  onChange={(e) => handleChange('age', parseInt(e.target.value))}
-                  placeholder="Years"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={labelStyle}>Age *</label>
+                  <input style={inputStyle} className="input-focus" type="number" value={profile.age || ''} onChange={(e) => handleChange('age', parseInt(e.target.value))} placeholder="Years" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Gender *</label>
+                  <select style={inputStyle} className="input-focus" value={profile.gender || ''} onChange={(e) => handleChange('gender', e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
-              
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Gender *
-                </label>
-                <select
-                  value={profile.gender || ''}
-                  onChange={(e) => handleChange('gender', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Ethnicity
-                </label>
-                <select
-                  value={profile.ethnicity || ''}
-                  onChange={(e) => handleChange('ethnicity', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  <option value="">Select</option>
-                  <option value="caucasian">Caucasian</option>
-                  <option value="african-american">African American</option>
-                  <option value="hispanic">Hispanic</option>
-                  <option value="asian">Asian</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Education Level *
-                </label>
-                <select
-                  value={profile.education || ''}
-                  onChange={(e) => handleChange('education', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  <option value="">Select highest level</option>
-                  <option value="elementary">Elementary School</option>
+                <label style={labelStyle}>Education Level *</label>
+                <select style={inputStyle} className="input-focus" value={profile.education || ''} onChange={(e) => handleChange('education', e.target.value)}>
+                  <option value="">Select level</option>
+                  <option value="elementary">Elementary</option>
                   <option value="high-school">High School</option>
-                  <option value="some-college">Some College</option>
-                  <option value="associate">Associate Degree</option>
-                  <option value="bachelors">Bachelor's Degree</option>
-                  <option value="masters">Master's Degree</option>
+                  <option value="bachelors">Bachelor's</option>
+                  <option value="masters">Master's</option>
                   <option value="doctorate">Doctorate</option>
                 </select>
               </div>
-              
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Occupation *
-                </label>
-                <input
-                  type="text"
-                  value={profile.occupation || ''}
-                  onChange={(e) => handleChange('occupation', e.target.value)}
-                  placeholder="e.g., Retired teacher, Software engineer"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Primary Language
-                </label>
-                <select
-                  value={profile.language || 'english'}
-                  onChange={(e) => handleChange('language', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  <option value="english">English</option>
-                  <option value="spanish">Spanish</option>
-                  <option value="chinese">Chinese</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Dominant Hand
-                </label>
-                <select
-                  value={profile.handedness || 'right'}
-                  onChange={(e) => handleChange('handedness', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  <option value="right">Right-handed</option>
-                  <option value="left">Left-handed</option>
-                  <option value="ambidextrous">Ambidextrous</option>
-                </select>
+                <label style={labelStyle}>Occupation *</label>
+                <input style={inputStyle} className="input-focus" type="text" value={profile.occupation || ''} onChange={(e) => handleChange('occupation', e.target.value)} placeholder="e.g. Retired Engineer" />
               </div>
             </div>
           )}
         </div>
 
-        {/* Section 2: Clinical Measurements */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div 
-            onClick={() => toggleSection('clinical')}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              cursor: 'pointer',
-              padding: '0.5rem 0',
-              borderBottom: '2px solid #E8F0EE'
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1C2B3A' }}>Health & Lifestyle</h3>
-            <span style={{ fontSize: '1.2rem' }}>{expandedSections.clinical ? '−' : '+'}</span>
+        {/* Section 2: Health & Lifestyle */}
+        <div style={sectionStyle}>
+          <div style={headerStyle} onClick={() => toggleSection('clinical')}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              <Activity size={18} color="var(--sage)" />
+              <span style={{ fontWeight: 600 }}>Health & Lifestyle</span>
+            </div>
+            <ChevronRight size={18} style={{ transform: expandedSections.clinical ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }} />
           </div>
           
           {expandedSections.clinical && (
-            <div style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  BMI (Body Mass Index)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={profile.bmi || ''}
-                  onChange={(e) => handleChange('bmi', parseFloat(e.target.value))}
-                  placeholder="e.g., 22.5"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
+            <div style={{ padding: '0 1.5rem 1.5rem', display: 'grid', gap: '1.2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={labelStyle}>BMI</label>
+                  <input style={inputStyle} className="input-focus" type="number" step="0.1" value={profile.bmi || ''} onChange={(e) => handleChange('bmi', parseFloat(e.target.value))} placeholder="24.5" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Sleep Quality</label>
+                  <input style={inputStyle} className="input-focus" type="number" min="1" max="10" value={profile.sleep_quality || ''} onChange={(e) => handleChange('sleep_quality', parseInt(e.target.value))} placeholder="1-10" />
+                </div>
               </div>
-              
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Smoking Status
-                </label>
-                <select
-                  value={profile.smoking || ''}
-                  onChange={(e) => handleChange('smoking', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
+                <label style={labelStyle}>Smoking Status</label>
+                <select style={inputStyle} className="input-focus" value={profile.smoking || ''} onChange={(e) => handleChange('smoking', e.target.value)}>
                   <option value="">Select</option>
-                  <option value="never">Never smoked</option>
-                  <option value="former">Former smoker</option>
-                  <option value="current">Current smoker</option>
+                  <option value="never">Never</option>
+                  <option value="former">Former</option>
+                  <option value="current">Current</option>
                 </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Alcohol Consumption
-                </label>
-                <select
-                  value={profile.alcohol || ''}
-                  onChange={(e) => handleChange('alcohol', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  <option value="">Select</option>
-                  <option value="none">None</option>
-                  <option value="light">Light (1-3 drinks/week)</option>
-                  <option value="moderate">Moderate (4-7 drinks/week)</option>
-                  <option value="heavy">Heavy (8+ drinks/week)</option>
-                </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Physical Activity (0-10 scale)
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="10"
-                  value={profile.physical_activity || ''}
-                  onChange={(e) => handleChange('physical_activity', parseInt(e.target.value))}
-                  placeholder="0=sedentary, 10=very active"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Diet Quality (0-10 scale)
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="10"
-                  value={profile.diet_quality || ''}
-                  onChange={(e) => handleChange('diet_quality', parseInt(e.target.value))}
-                  placeholder="0=poor, 10=excellent"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Sleep Quality (1-10 scale)
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  min="1"
-                  max="10"
-                  value={profile.sleep_quality || ''}
-                  onChange={(e) => handleChange('sleep_quality', parseInt(e.target.value))}
-                  placeholder="1=poor, 10=excellent"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
               </div>
             </div>
           )}
         </div>
 
-        {/* Section 3: Medical History */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div 
-            onClick={() => toggleSection('medical')}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              cursor: 'pointer',
-              padding: '0.5rem 0',
-              borderBottom: '2px solid #E8F0EE'
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1C2B3A' }}>Medical History</h3>
-            <span style={{ fontSize: '1.2rem' }}>{expandedSections.medical ? '−' : '+'}</span>
+        {/* Section 3: Medical Flags (PRO) */}
+        <div style={{ ...sectionStyle, position: 'relative' }}>
+          {!isPro && expandedSections.medical && lockOverlay}
+          <div style={headerStyle} onClick={() => toggleSection('medical')}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              <ShieldAlert size={18} color={isPro ? "var(--sage)" : "var(--slate)"} />
+              <span style={{ fontWeight: 600, color: isPro ? 'inherit' : 'var(--slate)' }}>Medical Flags</span>
+              {!isPro && <Lock size={12} style={{ opacity: 0.5 }} />}
+            </div>
+            <ChevronRight size={18} style={{ transform: expandedSections.medical ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }} />
           </div>
           
           {expandedSections.medical && (
-            <div style={{ marginTop: '1rem', display: 'grid', gap: '0.75rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={profile.family_history || false}
-                  onChange={(e) => handleChange('family_history', e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span>Family history of Alzheimer's disease</span>
-              </label>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={profile.cardiovascular_disease || false}
-                  onChange={(e) => handleChange('cardiovascular_disease', e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span>Cardiovascular disease</span>
-              </label>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={profile.diabetes || false}
-                  onChange={(e) => handleChange('diabetes', e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span>Diabetes</span>
-              </label>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={profile.depression || false}
-                  onChange={(e) => handleChange('depression', e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span>Depression</span>
-              </label>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={profile.head_injury || false}
-                  onChange={(e) => handleChange('head_injury', e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span>History of head injury</span>
-              </label>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={profile.hypertension || false}
-                  onChange={(e) => handleChange('hypertension', e.target.checked)}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <span>Hypertension (high blood pressure)</span>
-              </label>
+            <div style={{ padding: '0 1.5rem 1.5rem', display: 'grid', gap: '0.8rem', opacity: isPro ? 1 : 0.3 }}>
+              {['Vision Impairment', 'Hearing Impairment', 'Motor Impairment', 'Diabetes', 'Hypertension', 'History of Stroke'].map(flag => (
+                <label key={flag} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem', background: '#F8FAFC', borderRadius: '12px', cursor: isPro ? 'pointer' : 'default' }}>
+                  <input 
+                    type="checkbox" 
+                    disabled={!isPro}
+                    checked={(profile.medicalFlags || []).includes(flag.toLowerCase().replace(' ', '-'))}
+                    onChange={(e) => {
+                      const current = profile.medicalFlags || [];
+                      const val = flag.toLowerCase().replace(' ', '-');
+                      const next = e.target.checked ? [...current, val] : current.filter(c => c !== val);
+                      handleChange('medicalFlags', next);
+                    }}
+                  />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{flag}</span>
+                </label>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Section 4: Vitals & Lab Results (Optional) */}
-        <div>
-          <div 
-            onClick={() => toggleSection('vitals')}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              cursor: 'pointer',
-              padding: '0.5rem 0',
-              borderBottom: '2px solid #E8F0EE'
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1C2B3A' }}>Vitals & Lab Results (Optional)</h3>
-            <span style={{ fontSize: '1.2rem' }}>{expandedSections.vitals ? '−' : '+'}</span>
+        {/* Section 4: Clinical Vitals (PRO) */}
+        <div style={{ ...sectionStyle, position: 'relative' }}>
+          {!isPro && expandedSections.vitals && lockOverlay}
+          <div style={headerStyle} onClick={() => toggleSection('vitals')}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              <Heart size={18} color={isPro ? "var(--sage)" : "var(--slate)"} />
+              <span style={{ fontWeight: 600, color: isPro ? 'inherit' : 'var(--slate)' }}>Clinical Vitals</span>
+              {!isPro && <Lock size={12} style={{ opacity: 0.5 }} />}
+            </div>
+            <ChevronRight size={18} style={{ transform: expandedSections.vitals ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }} />
           </div>
           
           {expandedSections.vitals && (
-            <div style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Systolic BP (mmHg)
-                </label>
-                <input
-                  type="number"
-                  value={profile.systolic_bp || ''}
-                  onChange={(e) => handleChange('systolic_bp', parseInt(e.target.value))}
-                  placeholder="e.g., 120"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
+            <div style={{ padding: '0 1.5rem 1.5rem', display: 'grid', gap: '1.2rem', opacity: isPro ? 1 : 0.3 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={labelStyle}>Systolic BP</label>
+                  <input style={inputStyle} disabled={!isPro} type="number" value={profile.systolic_bp || ''} onChange={(e) => handleChange('systolic_bp', parseInt(e.target.value))} placeholder="mmHg" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Diastolic BP</label>
+                  <input style={inputStyle} disabled={!isPro} type="number" value={profile.diastolic_bp || ''} onChange={(e) => handleChange('diastolic_bp', parseInt(e.target.value))} placeholder="mmHg" />
+                </div>
               </div>
-              
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Diastolic BP (mmHg)
-                </label>
-                <input
-                  type="number"
-                  value={profile.diastolic_bp || ''}
-                  onChange={(e) => handleChange('diastolic_bp', parseInt(e.target.value))}
-                  placeholder="e.g., 80"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Total Cholesterol (mg/dL)
-                </label>
-                <input
-                  type="number"
-                  value={profile.cholesterol_total || ''}
-                  onChange={(e) => handleChange('cholesterol_total', parseFloat(e.target.value))}
-                  placeholder="e.g., 190"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  LDL Cholesterol (mg/dL)
-                </label>
-                <input
-                  type="number"
-                  value={profile.cholesterol_ldl || ''}
-                  onChange={(e) => handleChange('cholesterol_ldl', parseFloat(e.target.value))}
-                  placeholder="e.g., 100"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  HDL Cholesterol (mg/dL)
-                </label>
-                <input
-                  type="number"
-                  value={profile.cholesterol_hdl || ''}
-                  onChange={(e) => handleChange('cholesterol_hdl', parseFloat(e.target.value))}
-                  placeholder="e.g., 55"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#4A7C6F', marginBottom: '0.3rem' }}>
-                  Triglycerides (mg/dL)
-                </label>
-                <input
-                  type="number"
-                  value={profile.cholesterol_triglycerides || ''}
-                  onChange={(e) => handleChange('cholesterol_triglycerides', parseFloat(e.target.value))}
-                  placeholder="e.g., 150"
-                  style={{
-                    width: '100%',
-                    padding: '0.7rem',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem'
-                  }}
-                />
+                <label style={labelStyle}>Total Cholesterol</label>
+                <input style={inputStyle} disabled={!isPro} type="number" value={profile.cholesterol_total || ''} onChange={(e) => handleChange('cholesterol_total', parseFloat(e.target.value))} placeholder="mg/dL" />
               </div>
             </div>
           )}
         </div>
-        
-        <div style={{ marginTop: '1rem', fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
-          * Required fields for MoCA-standard assessment
+
+        <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--sage-pale)', borderRadius: '16px', display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+          <AlertCircle size={18} color="var(--sage)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--sage)', lineHeight: 1.5 }}>
+            <strong>Privacy Note:</strong> All clinical data is encrypted. Your patient's identity remains private and is only used to calibrate assessment results.
+          </p>
         </div>
       </div>
     </div>

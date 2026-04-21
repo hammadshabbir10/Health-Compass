@@ -55,6 +55,22 @@ function App() {
       });
   }, []);
 
+  const refreshUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUser(data.user);
+      }
+    } catch (err) {
+      console.error('Error refreshing user:', err);
+    }
+  };
+
   const handleLogin = (userData, token) => {
     localStorage.setItem('token', token);
     setUser(userData);
@@ -157,7 +173,7 @@ function App() {
           path="/dashboard"
           element={
             isAuthenticated ? (
-              <Dashboard user={user} onLogout={handleLogout} />
+              <Dashboard user={user} onLogout={handleLogout} refreshUser={refreshUser} />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -218,7 +234,7 @@ function App() {
           path="/tests/adaptive"
           element={
             isAuthenticated ? (
-              <AdaptiveTest user={user} onLogout={handleLogout} />
+              <AdaptiveTest user={user} onLogout={handleLogout} refreshUser={refreshUser} />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -228,7 +244,7 @@ function App() {
           path="/tests/results"
           element={
             isAuthenticated ? (
-              <Results user={user} onLogout={handleLogout} />
+              <Results user={user} onLogout={handleLogout} refreshUser={refreshUser} />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -259,7 +275,7 @@ function App() {
           path="/pricing"
           element={
             isAuthenticated ? (
-              <Subscription user={user} onLogout={handleLogout} />
+              <Subscription user={user} onLogout={handleLogout} refreshUser={refreshUser} />
             ) : (
               <Navigate to="/login" replace />
             )

@@ -30,6 +30,11 @@ function LanguageTest({ user, onLogout }) {
     localStorage.setItem('healthCompassAnswers', JSON.stringify(stored));
   }, [answers]);
 
+  const isAllAnswered = questions.length > 0 && questions.every(q => {
+    const ans = answers[q.id];
+    return ans !== undefined && ans !== null && String(ans).trim() !== '';
+  });
+
   return (
     <div className="tp-root">
       <style>{TEST_STYLES}</style>
@@ -102,9 +107,25 @@ function LanguageTest({ user, onLogout }) {
                 )}
               </div>
             ))}
-            <div className="tp-actions">
-              <button className="tp-btn-secondary" onClick={() => navigate('/tests/executive')}><ArrowLeft size={16} /> Back</button>
-              <button className="tp-btn-primary" onClick={() => navigate('/tests/functional')}>Submit & Continue <ArrowRight size={16} /></button>
+            <div className="tp-actions" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+              {!isAllAnswered && (
+                <div style={{ color: '#B91C1C', fontSize: '0.85rem', marginBottom: '0.5rem', fontWeight: 500 }}>
+                  * Please answer all questions to proceed.
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+                <button className="tp-btn-secondary" onClick={() => navigate('/tests/executive')}>
+                  <ArrowLeft size={16} /> Back
+                </button>
+                <button 
+                  className="tp-btn-primary" 
+                  onClick={() => navigate('/tests/functional')}
+                  disabled={!isAllAnswered}
+                  style={{ opacity: isAllAnswered ? 1 : 0.6, cursor: isAllAnswered ? 'pointer' : 'not-allowed' }}
+                >
+                  Submit & Continue <ArrowRight size={16} />
+                </button>
+              </div>
             </div>
           </div>
         )}

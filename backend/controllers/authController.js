@@ -148,6 +148,11 @@ exports.googleAuth = async (req, res) => {
         role: user.role,
         isEmailVerified: user.isEmailVerified,
         lastLogin: user.lastLogin,
+        subscriptionTier: user.subscriptionTier,
+        freeTestsUsed: user.freeTestsUsed,
+        subscriptionTestsUsed: user.subscriptionTestsUsed,
+        subscriptionResetDate: user.subscriptionResetDate,
+        hasUsedAdaptive: user.hasUsedAdaptive,
       },
       emailSent: emailResult.success,
     });
@@ -213,6 +218,10 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        subscriptionTier: user.subscriptionTier,
+        freeTestsUsed: user.freeTestsUsed,
+        subscriptionTestsUsed: user.subscriptionTestsUsed,
+        hasUsedAdaptive: user.hasUsedAdaptive,
       }
     });
   } catch (error) {
@@ -295,6 +304,11 @@ exports.login = async (req, res) => {
         role: user.role,
         isEmailVerified: user.isEmailVerified,
         lastLogin: user.lastLogin,
+        subscriptionTier: user.subscriptionTier,
+        freeTestsUsed: user.freeTestsUsed,
+        subscriptionTestsUsed: user.subscriptionTestsUsed,
+        subscriptionResetDate: user.subscriptionResetDate,
+        hasUsedAdaptive: user.hasUsedAdaptive,
       },
     });
   } catch (error) {
@@ -313,6 +327,17 @@ exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
+    // Migration for legacy data
+    if (user.testsUsed > 0 && user.freeTestsUsed === 0 && user.subscriptionTestsUsed === 0) {
+      if (user.subscriptionTier === 'free') {
+        user.freeTestsUsed = user.testsUsed;
+      } else {
+        user.subscriptionTestsUsed = user.testsUsed;
+      }
+      user.testsUsed = 0; // Clear legacy field
+      await user.save();
+    }
+
     res.status(200).json({
       success: true,
       user: {
@@ -323,6 +348,11 @@ exports.getMe = async (req, res) => {
         isEmailVerified: user.isEmailVerified,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin,
+        subscriptionTier: user.subscriptionTier,
+        freeTestsUsed: user.freeTestsUsed,
+        subscriptionTestsUsed: user.subscriptionTestsUsed,
+        subscriptionResetDate: user.subscriptionResetDate,
+        hasUsedAdaptive: user.hasUsedAdaptive,
       },
     });
   } catch (error) {
@@ -404,6 +434,11 @@ exports.updateProfile = async (req, res) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        subscriptionTier: user.subscriptionTier,
+        freeTestsUsed: user.freeTestsUsed,
+        subscriptionTestsUsed: user.subscriptionTestsUsed,
+        subscriptionResetDate: user.subscriptionResetDate,
+        hasUsedAdaptive: user.hasUsedAdaptive,
       },
     });
   } catch (error) {
@@ -475,6 +510,10 @@ exports.verifyEmail = async (req, res) => {
         email: createdUser.email,
         role: createdUser.role,
         isEmailVerified: createdUser.isEmailVerified,
+        subscriptionTier: createdUser.subscriptionTier,
+        freeTestsUsed: createdUser.freeTestsUsed,
+        subscriptionTestsUsed: createdUser.subscriptionTestsUsed,
+        hasUsedAdaptive: createdUser.hasUsedAdaptive,
       },
     });
   } catch (error) {

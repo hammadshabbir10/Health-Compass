@@ -172,11 +172,11 @@ ${domainInstructions}
 
 Generate EXACTLY 5 tests with the following specifications:
 
-1. **Question Count**: Each test MUST have exactly 12 questions
+1. **Question Count**: Each test MUST have exactly 6 questions
 2. **Difficulty Distribution**: 
-   - 4 easy questions (foundational, most should answer correctly)
-   - 5 medium questions (moderate challenge)
-   - 3 hard questions (discriminating, fewer will answer correctly)
+   - 2 easy questions (foundational, most should answer correctly)
+   - 2 medium questions (moderate challenge)
+   - 2 hard questions (discriminating, fewer will answer correctly)
 3. **Question Format**: MCQ only with exactly 4 options (A, B, C, D)
 4. **Include difficulty field**: Each question must have "difficulty": "easy"|"medium"|"hard"
 5. **Include domain tag**: Each question must have "cognitiveDomain": specific subdomain being tested
@@ -251,7 +251,7 @@ const buildAdaptivePrompt = ({
 ## CURRENT ASSESSMENT STATE
 - Domain: ${domain.name} (${currentDomain})
 - Standard: ${domain.standard}
-- Question number: ${questionNumber} of 12 in this domain
+- Question number: ${questionNumber} of 6 in this domain
 - Target difficulty: ${targetDifficulty} (based on adaptive algorithm)
 - ${performanceSummary}
 
@@ -372,6 +372,41 @@ exports.generateTests = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Gemini API key not configured.' });
     }
 
+    const User = require('../models/User');
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Migration for legacy users
+    if (user.subscriptionTestsUsed === 0 && user.testsUsed > 0 && user.subscriptionTier !== 'free') {
+      user.subscriptionTestsUsed = user.testsUsed;
+      await user.save();
+    }
+
+    // 30-Day Reset Logic (Monthly allowance)
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const lastReset = user.subscriptionResetDate || user.createdAt || now;
+    
+    if (user.subscriptionTier !== 'free' && (now - lastReset) > thirtyDaysInMs) {
+      user.subscriptionTestsUsed = 0;
+      user.subscriptionResetDate = now;
+      await user.save();
+    }
+
+    const limits = { free: 2, basic: 10, pro: Infinity };
+    const tier = user.subscriptionTier;
+    const currentUsage = tier === 'free' ? user.freeTestsUsed : user.subscriptionTestsUsed;
+    const currentLimit = limits[tier] || 2;
+
+    if (currentUsage >= currentLimit) {
+      return res.status(403).json({ 
+        success: false, 
+        message: `Assessment limit reached for ${tier.toUpperCase()} plan (${currentUsage}/${currentLimit}). Please upgrade for more.` 
+      });
+    }
+
     const prompt = buildPrompt(profile);
     
     // Use Gemini 3.1 Flash Lite Preview (free tier)
@@ -418,6 +453,14 @@ exports.generateTests = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Gemini did not return tests.' });
     }
 
+    // Increment the appropriate counter
+    if (user.subscriptionTier === 'free') {
+      user.freeTestsUsed += 1;
+    } else {
+      user.subscriptionTestsUsed += 1;
+    }
+    await user.save();
+
     return res.status(200).json({ 
       success: true, 
       tests,
@@ -453,6 +496,22 @@ exports.generateAdaptiveQuestion = async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         message: `Invalid domain: ${currentDomain}. Valid domains: ${Object.keys(COGNITIVE_DOMAINS).join(', ')}` 
+      });
+    }
+
+    const User = require('../models/User');
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Only check if free user has already used their trial when starting a NEW adaptive assessment (first domain, q1)
+    const isFirstQuestionOfAssessment = (currentDomain === 'global' && (questionNumber === 1 || !questionNumber));
+    
+    if (user.subscriptionTier === 'free' && isFirstQuestionOfAssessment && user.hasUsedAdaptive) {
+      return res.status(403).json({
+        success: false,
+        message: 'Free adaptive trial already used. Standard mode available for remaining tests.'
       });
     }
 
@@ -526,6 +585,12 @@ exports.generateAdaptiveQuestion = async (req, res) => {
       cognitiveDomain: question.cognitiveDomain || currentDomain,
       mocaPoints: question.mocaPoints || 1,
     };
+
+    // Mark trial as used only on the very first question of the assessment successfully generated
+    if (user.subscriptionTier === 'free' && isFirstQuestionOfAssessment) {
+      user.hasUsedAdaptive = true;
+      await user.save();
+    }
 
     return res.status(200).json({
       success: true,

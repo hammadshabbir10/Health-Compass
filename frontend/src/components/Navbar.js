@@ -127,10 +127,28 @@ const NAVBAR_STYLES = `
     font-size: 0.88rem;
     color: #5A6A7A;
     font-weight: 500;
-    max-width: 130px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .hc-nav-plan-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    letter-spacing: 0.05em;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .hc-nav-plan-badge.pro {
+    background: var(--navy);
+    color: #fff;
+  }
+  .hc-nav-plan-badge.basic {
+    background: #FDF0E6;
+    color: #D4793A;
   }
 
   .hc-nav-btn-logout {
@@ -326,6 +344,9 @@ function Navbar({ user, onLogout }) {
                 <div className="hc-nav-user">
                   <div className="hc-nav-avatar">{initials}</div>
                   <span className="hc-nav-username">{displayName}</span>
+                  <span className={`hc-nav-plan-badge ${user.subscriptionTier || 'free'}`}>
+                    {user.subscriptionTier || 'FREE'}
+                  </span>
                 </div>
                 <button className="hc-nav-btn-logout" onClick={onLogout}>Log out</button>
               </>

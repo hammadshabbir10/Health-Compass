@@ -76,6 +76,22 @@ const userSchema = new mongoose.Schema({
     enum: ['free', 'basic', 'pro'],
     default: 'free',
   },
+  freeTestsUsed: {
+    type: Number,
+    default: 0,
+  },
+  subscriptionTestsUsed: {
+    type: Number,
+    default: 0,
+  },
+  subscriptionResetDate: {
+    type: Date,
+    default: Date.now,
+  },
+  hasUsedAdaptive: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Hash password before saving

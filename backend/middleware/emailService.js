@@ -3,6 +3,8 @@ const {
   verificationEmailTemplate,
   welcomeEmailTemplate,
   satelliteAlertEmailTemplate,
+  subscriptionEmailTemplate,
+  specialistContactEmailTemplate,
 } = require('./emailTemplates');
 
 const sendVerificationEmail = async (email, verificationCode) => {
@@ -103,9 +105,44 @@ const sendSatelliteAlertEmail = async (email, payload) => {
   }
 };
 
+const sendSubscriptionEmail = async (email, name, plan) => {
+  try {
+    const response = await transporter.sendMail({
+      from: `"HealthCompass" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `Your Subscription Upgraded to ${plan.toUpperCase()}`,
+      text: `Hello ${name}, your subscription has been upgraded to ${plan.toUpperCase()}.`,
+      html: subscriptionEmailTemplate(name, plan),
+    });
+    console.log('Subscription email sent successfully:', response.messageId);
+    return { success: true, messageId: response.messageId };
+  } catch (error) {
+    console.log('Email error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendBroadcastEmail,
   sendSatelliteAlertEmail,
+  sendSubscriptionEmail,
+  sendSpecialistContactEmail: async (patientName, caregiverEmail, message) => {
+    try {
+      const response = await transporter.sendMail({
+        from: `"HealthCompass Specialist Support" <${process.env.EMAIL_USER}>`,
+        to: "hammadxflow66@gmail.com", // Updated specialist recipient
+        replyTo: caregiverEmail, // Specialist can reply directly to caregiver
+        subject: `[Specialist Request] Patient: ${patientName}`,
+        text: `New specialist contact request for patient ${patientName} from ${caregiverEmail}. Message: ${message}`,
+        html: specialistContactEmailTemplate(patientName, caregiverEmail, message),
+      });
+      console.log('Specialist contact email sent successfully:', response.messageId);
+      return { success: true, messageId: response.messageId };
+    } catch (error) {
+      console.log('Specialist email error:', error);
+      return { success: false, error: error.message };
+    }
+  },
 };

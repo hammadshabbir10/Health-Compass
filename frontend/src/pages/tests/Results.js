@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
-import { Brain, LayoutDashboard, Home, RefreshCw, AlertCircle, BarChart2 } from 'lucide-react';
+import { Brain, LayoutDashboard, Home, RefreshCw, AlertCircle, BarChart2, ShieldCheck, Check } from 'lucide-react';
 
 const ANSWER_KEY = 'healthCompassAnswers';
 const TEST_KEY = 'healthCompassTests';
@@ -81,100 +81,118 @@ const STYLES = `
 
   /* ── MoCA card ── */
   .res-moca-card {
-    background: var(--navy);
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
     border-radius: var(--radius-xl);
-    padding: 2rem;
-    margin-bottom: 1.5rem;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
     animation: cardRise 0.55s cubic-bezier(.22,.68,0,1.2) both;
+    box-shadow: 0 30px 60px -12px rgba(28, 43, 58, 0.35);
   }
   .res-moca-card::before {
     content: '';
     position: absolute;
     top: -80px; right: -80px;
-    width: 280px; height: 280px;
+    width: 300px; height: 300px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(107,158,145,0.18), transparent 70%);
+    background: radial-gradient(circle, rgba(107,158,145,0.22), transparent 70%);
     pointer-events: none;
+    filter: blur(25px);
   }
   .res-moca-top {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     flex-wrap: wrap;
     gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     position: relative;
   }
   .res-moca-label {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 0.25rem 0.7rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 999px;
     background: rgba(255,255,255,0.1);
     color: var(--sage-light);
-    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
-    margin-bottom: 0.5rem;
-    border: 1px solid rgba(107,158,145,0.3);
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
   }
-  .res-moca-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--cream); margin-bottom: 0.3rem; }
-  .res-moca-sub { font-size: 0.85rem; color: rgba(250,247,242,0.55); }
+  .res-moca-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--cream); margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+  .res-moca-sub { font-size: 0.9rem; color: rgba(250,247,242,0.55); font-weight: 500; }
 
-  .res-moca-score-wrap { text-align: right; flex-shrink: 0; }
+  .res-moca-score-wrap { 
+    text-align: right; 
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+    padding: 1rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(4px);
+  }
   .res-moca-num {
     font-family: var(--font-display);
-    font-size: clamp(2.8rem, 6vw, 3.8rem);
+    font-size: clamp(3rem, 7vw, 4.2rem);
     line-height: 1;
     margin-bottom: 0.2rem;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
-  .res-moca-denom { font-size: 1.2rem; color: rgba(250,247,242,0.4); font-weight: 400; }
-  .res-moca-adj { font-size: 0.78rem; color: rgba(250,247,242,0.5); margin-top: 0.2rem; }
+  .res-moca-denom { font-size: 1.4rem; color: rgba(250,247,242,0.3); font-weight: 400; }
+  .res-moca-adj { font-size: 0.85rem; color: rgba(250,247,242,0.5); margin-top: 0.3rem; font-weight: 600; }
 
   /* Interpretation banner */
   .res-moca-interp {
     display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1.1rem 1.2rem;
-    border-radius: var(--radius-md);
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-lg);
     border: 1px solid;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
     position: relative;
+    backdrop-filter: blur(4px);
   }
   .res-moca-interp-dot {
-    width: 10px; height: 10px;
+    width: 12px; height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
-    margin-top: 3px;
+    box-shadow: 0 0 10px currentColor;
   }
-  .res-moca-interp-label { font-weight: 600; font-size: 0.92rem; margin-bottom: 0.35rem; }
-  .res-moca-interp-text { font-size: 0.85rem; color: rgba(250,247,242,0.65); line-height: 1.6; }
+  .res-moca-interp-label { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.2rem; }
+  .res-moca-interp-text { font-size: 0.92rem; color: rgba(250,247,242,0.7); line-height: 1.6; }
 
   /* Range legend */
   .res-moca-ranges {
-    display: flex; flex-wrap: wrap; gap: 0.75rem;
+    display: flex; flex-wrap: wrap; gap: 1rem;
     position: relative;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
   }
-  .res-range-item { display: flex; align-items: center; gap: 0.4rem; }
-  .res-range-dot { width: 8px; height: 8px; border-radius: 2px; }
-  .res-range-label { font-size: 0.75rem; }
+  .res-range-item { display: flex; align-items: center; gap: 0.5rem; }
+  .res-range-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .res-range-label { font-size: 0.8rem; letter-spacing: 0.01em; }
 
   /* ── Summary card ── */
   .res-summary-card {
     background: var(--warm-white);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.6rem;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
     animation: cardRise 0.55s 0.05s cubic-bezier(.22,.68,0,1.2) both;
   }
-  .res-summary-title { font-family: var(--font-display); font-size: 1.15rem; color: var(--navy); margin-bottom: 0.5rem; }
-  .res-summary-desc { font-size: 0.875rem; color: var(--slate); line-height: 1.6; margin-bottom: 1rem; }
-  .res-summary-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
-  .res-stat-item {}
-  .res-stat-label { font-size: 0.75rem; color: var(--slate); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem; }
-  .res-stat-val { font-size: 1.3rem; font-weight: 700; color: var(--navy); }
+  .res-summary-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--navy); margin-bottom: 0.6rem; }
+  .res-summary-desc { font-size: 0.95rem; color: var(--slate); line-height: 1.7; margin-bottom: 1.5rem; }
+  .res-summary-stats { display: flex; gap: 3rem; flex-wrap: wrap; }
+  .res-stat-item {
+    padding-left: 1.2rem;
+    border-left: 3px solid var(--sage-pale);
+  }
+  .res-stat-label { font-size: 0.75rem; color: var(--slate); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .res-stat-val { font-size: 1.8rem; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
 
   /* ── Empty state ── */
   .res-empty {
@@ -344,8 +362,11 @@ const abilityOrder = [
   { id: 'functional', label: 'Functional' },
 ];
 
-function Results({ user, onLogout }) {
+function Results({ user, onLogout, refreshUser }) {
   const [mocaScore, setMocaScore] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
 
   const isAdaptive = useMemo(() => localStorage.getItem(ADAPTIVE_ANSWER_KEY) !== null, []);
 
@@ -427,6 +448,42 @@ function Results({ user, onLogout }) {
     return abilityOrder.map((domain) => ({ ...domain, percent: rowMap.get(domain.id)?.percent ?? 0 }));
   }, [summary.rows]);
 
+  const handleSaveToHistory = async () => {
+    if (!mocaScore || isSaved) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const interpretation = mocaScore.interpretation;
+      const severity = mocaScore.severity;
+
+      const response = await fetch('http://localhost:5000/api/assessment/save-result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          profile: profile,
+          scores: { total: mocaScore.adjusted, max: 30 },
+          prediction: severity,
+          interpretation: interpretation
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setIsSaved(true);
+        if (refreshUser) refreshUser(); // Update usage counts globally
+      } else {
+        throw new Error(data.message || 'Failed to save');
+      }
+    } catch (err) {
+      setSaveError('Failed to save result to history.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const radar = useMemo(() => {
     const size = 300;
     const center = size / 2;
@@ -459,8 +516,17 @@ function Results({ user, onLogout }) {
 
     const saveAssessment = async () => {
       try {
+        const hasStandardAnswers = localStorage.getItem(ANSWER_KEY);
+        const hasAdaptiveAnswers = localStorage.getItem(ADAPTIVE_ANSWER_KEY);
+
+        // FIX: Don't save if there are no answers at all (prevents empty 0/30 shells)
+        if (!hasStandardAnswers && !hasAdaptiveAnswers) return;
+
         const overallCorrect = summary.rows.reduce((s, r) => s + (r.correctCount || 0), 0);
-        const overallTotal   = summary.rows.reduce((s, r) => s + (r.total      || 0), 0);
+        const overallTotal = summary.rows.reduce((s, r) => s + (r.total || 0), 0);
+
+        // FIX: Don't save if the test structure is empty
+        if (overallTotal === 0) return;
         const byDomain = summary.rows.reduce((obj, r) => {
           obj[r.id] = { earned: r.correctCount || 0, total: r.total || 0, percentage: r.percent || 0 };
           return obj;
@@ -737,15 +803,25 @@ function Results({ user, onLogout }) {
 
         {/* ── Actions ── */}
         <div className="res-actions">
-          <Link to="/dashboard" className="res-btn-primary">
+          {!isSaved ? (
+            <button className="res-btn-primary" onClick={handleSaveToHistory} disabled={isSaving}>
+              {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+              {isSaving ? 'Saving...' : 'Save to History'}
+            </button>
+          ) : (
+            <div className="res-save-success">
+              <Check size={16} /> Saved to History
+            </div>
+          )}
+
+          <Link to="/dashboard" className="res-btn-secondary">
             <LayoutDashboard size={16} /> Dashboard
           </Link>
-          <Link to="/dashboard" className="res-btn-secondary" onClick={handleRetakeTest}>
-            <RefreshCw size={16} /> New Assessment
-          </Link>
+
           <Link to="/tests/clinical-risk" className="res-btn-ai">
             <Brain size={16} /> AI Risk Assessment
           </Link>
+
           <Link to="/home" className="res-btn-secondary">
             <Home size={16} /> Home
           </Link>

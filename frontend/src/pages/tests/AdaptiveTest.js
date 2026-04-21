@@ -11,7 +11,7 @@ const DOMAINS = [
   { id: 'functional', name: 'Functional Assessment', shortName: 'Functional' },
 ];
 
-const QUESTIONS_PER_DOMAIN = 12;
+const QUESTIONS_PER_DOMAIN = 6;
 
 const ADAPTIVE_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
@@ -69,98 +69,111 @@ const ADAPTIVE_STYLES = `
 
   /* ── Progress header ── */
   .at-progress-card {
-    background: var(--navy);
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
     border-radius: var(--radius-xl);
-    padding: 1.6rem 1.8rem;
-    margin-bottom: 1.2rem;
+    padding: 2rem 2.2rem;
+    margin-bottom: 1.5rem;
     position: relative;
     overflow: hidden;
     animation: atRise 0.5s cubic-bezier(.22,.68,0,1.2) both;
+    box-shadow: 0 25px 50px -12px rgba(28, 43, 58, 0.25);
   }
   .at-progress-card::before {
     content: '';
     position: absolute;
     top: -50px; right: -50px;
-    width: 200px; height: 200px;
+    width: 250px; height: 250px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(107,158,145,0.18), transparent 70%);
+    background: radial-gradient(circle, rgba(107,158,145,0.22), transparent 70%);
     pointer-events: none;
+    filter: blur(20px);
   }
 
   .at-progress-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1.2rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
     position: relative;
   }
 
   .at-domain-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.7rem;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
     border-radius: 999px;
-    background: rgba(107,158,145,0.18);
+    background: rgba(107,158,145,0.15);
     color: var(--sage-light);
     font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.09em;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 0.4rem;
-    border: 1px solid rgba(107,158,145,0.3);
+    margin-bottom: 0.6rem;
+    border: 1px solid rgba(107,158,145,0.25);
+    backdrop-filter: blur(4px);
   }
 
   .at-domain-title {
     font-family: var(--font-display);
-    font-size: 1.3rem;
+    font-size: 1.6rem;
     color: var(--cream);
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
   }
   .at-domain-sub {
-    font-size: 0.82rem;
-    color: rgba(250,247,242,0.5);
-    margin-top: 0.2rem;
+    font-size: 0.88rem;
+    color: rgba(250,247,242,0.6);
+    margin-top: 0.4rem;
+    font-weight: 500;
   }
 
-  .at-score-wrap { text-align: right; flex-shrink: 0; }
+  .at-score-wrap { 
+    text-align: right; 
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+    padding: 0.8rem 1.2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
   .at-score-num {
     font-family: var(--font-display);
-    font-size: 2.2rem;
+    font-size: 2.4rem;
     line-height: 1;
     color: var(--sage-light);
+    text-shadow: 0 4px 12px rgba(107,158,145,0.3);
   }
-  .at-score-sub { font-size: 0.78rem; color: rgba(250,247,242,0.5); margin-top: 0.15rem; }
+  .at-score-sub { font-size: 0.8rem; color: rgba(250,247,242,0.5); margin-top: 0.25rem; font-weight: 600; letter-spacing: 0.02em; }
 
   /* Domain step dots */
   .at-domain-steps {
     display: flex;
-    gap: 0.45rem;
-    margin-bottom: 0.9rem;
+    gap: 0.6rem;
+    margin-bottom: 1.2rem;
     position: relative;
   }
   .at-domain-step {
     flex: 1;
-    height: 5px;
-    border-radius: 3px;
-    transition: background 0.3s;
+    height: 6px;
+    border-radius: 4px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .at-domain-step.done { background: var(--sage-light); }
-  .at-domain-step.active { background: var(--amber); }
-  .at-domain-step.pending { background: rgba(255,255,255,0.1); }
+  .at-domain-step.done { background: var(--sage-light); box-shadow: 0 0 10px rgba(107,158,145,0.4); }
+  .at-domain-step.active { background: var(--amber); transform: scaleY(1.2); box-shadow: 0 0 12px rgba(212,121,58,0.5); }
+  .at-domain-step.pending { background: rgba(255,255,255,0.12); }
 
   /* Overall progress bar */
   .at-overall-row {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     position: relative;
   }
   .at-overall-track {
     flex: 1;
-    height: 6px;
-    background: rgba(255,255,255,0.1);
+    height: 8px;
+    background: rgba(255,255,255,0.08);
     border-radius: 999px;
     overflow: hidden;
   }
@@ -168,9 +181,9 @@ const ADAPTIVE_STYLES = `
     height: 100%;
     background: linear-gradient(90deg, var(--sage-light), var(--sage));
     border-radius: 999px;
-    transition: width 0.4s ease;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .at-overall-pct { font-size: 0.8rem; color: rgba(250,247,242,0.55); min-width: 34px; text-align: right; }
+  .at-overall-pct { font-size: 0.85rem; color: rgba(250,247,242,0.6); min-width: 40px; text-align: right; font-weight: 700; }
 
   /* ── Difficulty pills ── */
   .at-difficulty-row {

@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const aiRoutes = require('./routes/ai');
 const assessmentRoutes = require('./routes/assessment');
 const subscriptionRoutes = require('./routes/subscription');
+const supportRoutes = require('./routes/support');
 const app = express();
 
 app.use(
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/support', supportRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({

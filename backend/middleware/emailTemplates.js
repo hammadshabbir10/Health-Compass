@@ -286,8 +286,113 @@ const satelliteAlertEmailTemplate = (payload) => {
     `;
 };
 
+const subscriptionEmailTemplate = (name, plan) => `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Subscription Upgraded - HealthCompass</title>
+      <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #FAF7F2; color: #1C2B3A; }
+          .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid rgba(74, 124, 111, 0.1); }
+          .header { background-color: #1C2B3A; color: white; padding: 40px 20px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .content { padding: 40px; line-height: 1.8; }
+          .plan-badge { display: inline-block; padding: 6px 16px; background: #E8F0EE; color: #4A7C6F; border-radius: 999px; font-weight: 700; text-transform: uppercase; font-size: 14px; margin: 10px 0; }
+          .footer { background-color: #f8fafc; padding: 20px; text-align: center; color: #64748b; font-size: 13px; }
+          .button { display: inline-block; padding: 14px 30px; background-color: #4A7C6F; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 25px; }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <div class="header">
+              <h1>Subscription Upgraded!</h1>
+          </div>
+          <div class="content">
+              <p>Hello <strong>${name}</strong>,</p>
+              <p>Great news! Your HealthCompass subscription has been successfully upgraded. You now have full access to all the features of your new plan.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                  <p style="font-size: 14px; color: #64748b; margin-bottom: 5px;">CURRENT PLAN</p>
+                  <span class="plan-badge">${plan}</span>
+              </div>
+              <p>With this upgrade, you can now enjoy:</p>
+              <ul>
+                  ${plan === 'pro' ? `
+                      <li>Unlimited AI Assessments</li>
+                      <li>Advanced Risk Prediction models</li>
+                      <li>Priority support and full history</li>
+                  ` : `
+                      <li>10 Assessments per month</li>
+                      <li>Adaptive testing capabilities</li>
+                      <li>Basic risk assessment</li>
+                  `}
+              </ul>
+              <p>Thank you for choosing HealthCompass for your cognitive health monitoring.</p>
+              <div style="text-align: center;">
+                  <a href="http://localhost:3000/dashboard" class="button">Go to Dashboard</a>
+              </div>
+          </div>
+          <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} HealthCompass. Professional Cognitive Care.</p>
+          </div>
+      </div>
+  </body>
+  </html>
+`;
+
+const specialistContactEmailTemplate = (patientName, caregiverEmail, message) => `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Specialist Contact Request - HealthCompass</title>
+      <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #1C2B3A; }
+          .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #e1e8ed; }
+          .header { background-color: #4A7C6F; color: white; padding: 30px 20px; text-align: center; }
+          .header h1 { margin: 0; font-size: 24px; }
+          .content { padding: 30px; line-height: 1.6; }
+          .info-box { background-color: #f8fafc; border-left: 4px solid #4A7C6F; padding: 15px; margin: 20px 0; }
+          .message-box { background-color: #ffffff; border: 1px solid #e1e8ed; border-radius: 8px; padding: 20px; margin: 20px 0; font-style: italic; }
+          .footer { background-color: #f8fafc; padding: 20px; text-align: center; color: #64748b; font-size: 12px; }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <div class="header">
+              <h1>New Specialist Contact Request</h1>
+          </div>
+          <div class="content">
+              <p>Hello Specialist Team,</p>
+              <p>You have received a new consultation request from a Pro member regarding their patient.</p>
+              
+              <div class="info-box">
+                  <p><strong>Patient Name:</strong> ${patientName}</p>
+                  <p><strong>Caregiver Email:</strong> ${caregiverEmail}</p>
+                  <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+              </div>
+              
+              <h3>Message from Caregiver:</h3>
+              <div class="message-box">
+                  "${message}"
+              </div>
+              
+              <p>Please review the patient's longitudinal data in the clinician portal and respond to the caregiver at your earliest convenience.</p>
+          </div>
+          <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} HealthCompass Clinical Specialist Team.</p>
+          </div>
+      </div>
+  </body>
+  </html>
+`;
+
 module.exports = {
   verificationEmailTemplate,
   welcomeEmailTemplate,
   satelliteAlertEmailTemplate,
+  subscriptionEmailTemplate,
+  specialistContactEmailTemplate,
 };

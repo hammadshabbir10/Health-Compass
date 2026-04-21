@@ -34,6 +34,8 @@ router.get('/ml-health', async (req, res) => {
   res.json(health);
 });
 
+const User = require('../models/User');
+
 // Save assessment to history
 router.post('/save-result', protect, async (req, res) => {
   try {

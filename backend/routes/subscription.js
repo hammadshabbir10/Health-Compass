@@ -26,6 +26,10 @@ router.post('/upgrade', protect, async (req, res) => {
     user.subscriptionTier = plan;
     await user.save();
 
+    // Send confirmation email
+    const { sendSubscriptionEmail } = require('../middleware/emailService');
+    await sendSubscriptionEmail(user.email, user.name, plan);
+
     res.status(200).json({
       success: true,
       data: {
