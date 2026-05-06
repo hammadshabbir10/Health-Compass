@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import posthog from 'posthog-js';
 import HealthCompassAuth from './HealthCompassAuth';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -16,6 +17,7 @@ import ClinicalRiskAssessment from './pages/tests/ClinicalRiskAssessment';
 import History from './pages/History';
 import Subscription from './pages/Subscription';
 import AdminFeedback from './pages/AdminFeedback';
+import GrowthMetrics from './pages/GrowthMetrics';
 import Phase4FeedbackModal from './components/Phase4FeedbackModal';
 
 function App() {
@@ -57,6 +59,17 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    if (user?.id) {
+      posthog.identify(user.id, {
+        email: user.email,
+        name: user.name,
+        subscriptionTier: user.subscriptionTier,
+        role: user.role,
+      });
+    }
+  }, [user]);
+
   const refreshUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -73,10 +86,16 @@ function App() {
     }
   };
 
-  const handleLogin = (userData, token) => {
+  const handleLogin = (userData, token, eventName = 'user_logged_in', eventProps = {}) => {
     localStorage.setItem('token', token);
     setUser(userData);
     setIsAuthenticated(true);
+    posthog.capture(eventName, {
+      userId: userData?.id,
+      email: userData?.email,
+      subscriptionTier: userData?.subscriptionTier,
+      ...eventProps,
+    });
     navigate('/home');
   };
 
@@ -84,6 +103,7 @@ function App() {
     localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
+    posthog.reset();
     navigate('/login');
   };
 
@@ -290,6 +310,16 @@ function App() {
           element={
             isAuthenticated && user?.role === 'admin' ? (
               <AdminFeedback user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin/metrics"
+          element={
+            isAuthenticated && user?.role === 'admin' ? (
+              <GrowthMetrics user={user} onLogout={handleLogout} />
             ) : (
               <Navigate to="/dashboard" replace />
             )

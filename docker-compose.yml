@@ -38,7 +38,7 @@ services:
       - JWT_EXPIRE=30d
       - ML_SERVICE_URL=http://healthcompass_ml:5001
       # IMPORTANT: PASTE YOUR ASSESSMENT ENGINE KEY HERE
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     env_file:
       - ./backend/config.env
     depends_on:
@@ -55,6 +55,9 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - REACT_APP_GOOGLE_CLIENT_ID=${REACT_APP_GOOGLE_CLIENT_ID}
+      - REACT_APP_POSTHOG_KEY=${REACT_APP_POSTHOG_KEY}
+      - REACT_APP_POSTHOG_HOST=${REACT_APP_POSTHOG_HOST}
       - WDS_SOCKET_PORT=0
       - CHOKIDAR_USEPOLLING=true
       - DISABLE_ESLINT_PLUGIN=true

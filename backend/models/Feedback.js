@@ -26,6 +26,12 @@ const feedbackSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  npsScore: {
+    type: Number,
+    min: 0,
+    max: 10,
+    default: null
+  },
   sus1: { type: String, default: null },
   sus2: { type: String, default: null },
   sus3: { type: String, default: null },

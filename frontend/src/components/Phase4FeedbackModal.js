@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import posthog from 'posthog-js';
 import { MessageSquare, X, CheckCircle, Star } from 'lucide-react';
 
 const FEEDBACK_STYLES = `
@@ -159,6 +160,32 @@ const FEEDBACK_STYLES = `
     padding-right: 16px !important;
     width: 60%;
   }
+
+  .p4-nps-scale {
+    display: grid;
+    grid-template-columns: repeat(11, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .p4-nps-btn {
+    padding: 8px 0;
+    border-radius: 10px;
+    border: 1px solid rgba(74, 124, 111, 0.2);
+    background: var(--cream, #FAF7F2);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-body, #3D4E5C);
+  }
+  .p4-nps-btn:hover {
+    border-color: var(--sage, #4A7C6F);
+  }
+  .p4-nps-btn.active {
+    background: var(--sage, #4A7C6F);
+    color: white;
+    border-color: var(--sage, #4A7C6F);
+  }
   
   .p4-footer {
     padding: 20px 24px;
@@ -220,6 +247,7 @@ export default function Phase4FeedbackModal() {
     mostUseful: '',
     reuse: '',
     pay: '',
+    npsScore: null,
     sus1: null,
     sus2: null,
     sus3: null,
@@ -228,8 +256,11 @@ export default function Phase4FeedbackModal() {
   });
 
   useEffect(() => {
-    // Auto popup on Results page if they haven't submitted yet
-    if (location.pathname === '/tests/results' && !localStorage.getItem('phase4_feedback_submitted')) {
+    if (location.pathname !== '/tests/results') return;
+    const metadata = JSON.parse(localStorage.getItem('healthCompassMetadata') || '{}');
+    const generatedAt = metadata.generatedAt || 'default';
+    const sessionKey = `phase4_feedback_submitted_${generatedAt}`;
+    if (!sessionStorage.getItem(sessionKey)) {
       const timer = setTimeout(() => setIsOpen(true), 1500);
       return () => clearTimeout(timer);
     }
@@ -265,6 +296,10 @@ export default function Phase4FeedbackModal() {
     setFormData({ ...formData, [`sus${qIndex}`]: value });
   };
 
+  const handleNpsChange = (score) => {
+    setFormData({ ...formData, npsScore: score });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("=== PHASE 4A USER FEEDBACK ===", formData);
@@ -292,8 +327,20 @@ export default function Phase4FeedbackModal() {
       console.error('Error connecting to feedback API:', err);
     }
 
-    localStorage.setItem('phase4_feedback_submitted', 'true');
+    const metadata = JSON.parse(localStorage.getItem('healthCompassMetadata') || '{}');
+    const generatedAt = metadata.generatedAt || 'default';
+    const sessionKey = `phase4_feedback_submitted_${generatedAt}`;
+    sessionStorage.setItem(sessionKey, 'true');
     localStorage.setItem('phase4_feedback_data', JSON.stringify(formData));
+
+    posthog.capture('feedback_submitted', {
+      testMode,
+      completion: formData.completion || 'unknown',
+      npsScore: formData.npsScore,
+    });
+    if (formData.npsScore !== null) {
+      posthog.capture('nps_submitted', { score: formData.npsScore });
+    }
     
     setTimeout(() => {
       setIsSubmitted(false); // reset for future
@@ -306,7 +353,7 @@ export default function Phase4FeedbackModal() {
       <style>{FEEDBACK_STYLES}</style>
       
       {/* Floating Action Button */}
-      {!isOpen && !localStorage.getItem('phase4_feedback_submitted') && (
+      {!isOpen && (
         <button className="p4-fab" onClick={() => setIsOpen(true)}>
           <MessageSquare size={18} />
           Provide Feedback
@@ -402,7 +449,23 @@ export default function Phase4FeedbackModal() {
                     </div>
 
                     <div className="p4-group">
-                      <label>7. System Usability Scale (SUS)</label>
+                      <label>7. How likely are you to recommend HealthCompass to a friend or colleague? (0-10)</label>
+                      <div className="p4-nps-scale">
+                        {Array.from({ length: 11 }, (_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className={`p4-nps-btn${formData.npsScore === i ? ' active' : ''}`}
+                            onClick={() => handleNpsChange(i)}
+                          >
+                            {i}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p4-group">
+                      <label>8. System Usability Scale (SUS)</label>
                       <table className="p4-sus-table">
                         <thead>
                           <tr>

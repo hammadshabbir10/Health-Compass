@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import posthog from 'posthog-js';
 import Navbar from '../components/Navbar';
 import { Check, CreditCard, ShieldCheck, X, Loader2, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -218,6 +219,10 @@ export default function Subscription({ user, onLogout, refreshUser }) {
       if (data.success) {
         setCurrentTier(selectedPlan.id);
         setToast(`Welcome to the ${selectedPlan.name} plan.`);
+        posthog.capture('subscription_upgraded', {
+          plan: selectedPlan.id,
+          price: selectedPlan.id === 'basic' ? 29 : selectedPlan.id === 'pro' ? 99 : 0,
+        });
         setSelectedPlan(null);
         setCardNumber(''); setExpiry(''); setCvc('');
         if (refreshUser) refreshUser();

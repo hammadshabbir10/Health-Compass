@@ -620,7 +620,7 @@ const HealthCompassAuth = ({ onLogin, initialView = 'login' }) => {
       const data = await response.json();
       if (data.success && data.user && data.token) {
         setSuccess('Login successful!');
-        setTimeout(() => { onLogin(data.user, data.token); }, 500);
+        setTimeout(() => { onLogin(data.user, data.token, 'user_logged_in', { method: 'password' }); }, 500);
       } else { setError(data.message || 'Login failed'); }
     } catch (err) { setError('Network error. Please try again.'); }
     finally { setLoading(false); }
@@ -637,7 +637,9 @@ const HealthCompassAuth = ({ onLogin, initialView = 'login' }) => {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (data.success && data.token && data.user) { onLogin(data.user, data.token); }
+      if (data.success && data.token && data.user) {
+        onLogin(data.user, data.token, 'user_logged_in', { method: 'google' });
+      }
       else { setError(data.message || 'Google sign-in failed'); }
     } catch (err) { setError('Google sign-in error'); }
     finally { setLoading(false); }
@@ -657,7 +659,7 @@ const HealthCompassAuth = ({ onLogin, initialView = 'login' }) => {
       const data = await response.json();
       if (data.success && data.token && data.user) {
         setSuccess('Registration successful!');
-        setTimeout(() => { onLogin(data.user, data.token); }, 500);
+        setTimeout(() => { onLogin(data.user, data.token, 'user_signed_up', { method: 'password' }); }, 500);
       } else if (data.success && data.pending) {
         setFlow('verify');
         setSuccess('OTP sent to your email. Please verify to continue.');

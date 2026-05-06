@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import posthog from 'posthog-js';
 import Navbar from '../../components/Navbar';
 import { Brain, LayoutDashboard, Home, RefreshCw, AlertCircle, BarChart2, ShieldCheck, Check } from 'lucide-react';
 
@@ -560,6 +561,13 @@ function Results({ user, onLogout, refreshUser }) {
         const data = await res.json();
         if (!data.success) {
           console.error('Failed to save assessment history:', data.message);
+        } else {
+          posthog.capture('test_completed', {
+            mode: summary.isAdaptive ? 'adaptive' : 'standard',
+            score: mocaScore?.adjusted ?? null,
+            total: 30,
+            percent: summary.overallPercent,
+          });
         }
       } catch (err) {
         console.error('Failed to save assessment history:', err);

@@ -453,7 +453,7 @@ exports.generateTests = async (req, res) => {
     }
 
     const prompt = buildPrompt(profile);
-    const text = await fetchAssessmentLlmText(prompt, 4096);
+    const text = await fetchAssessmentLlmText(prompt, 8192);
 
     if (!text) {
       return res.status(500).json({ success: false, message: 'Assessment engine failed to respond.' });
